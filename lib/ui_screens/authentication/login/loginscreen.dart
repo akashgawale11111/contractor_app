@@ -24,6 +24,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> loginUser() async {
     setState(() => loading = true);
+    // user login API call
 
     try {
       var request = http.MultipartRequest(
