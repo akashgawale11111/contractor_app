@@ -1,8 +1,11 @@
-import 'dart:io';
 
 import 'package:contractor_app/language/lib/l10n/app_localizations.dart';
 import 'package:contractor_app/language/lib/l10n/language_provider.dart';
+import 'package:contractor_app/logic/Apis/apis.dart';
+import 'package:contractor_app/logic/Apis/project_provider.dart';
+import 'package:contractor_app/models/project_Model.dart';
 import 'package:contractor_app/ui_screens/authentication/login/loginscreen.dart';
+import 'package:contractor_app/ui_screens/home/face_detection.dart/face_detection1.dart';
 import 'package:contractor_app/ui_screens/home/map_screen/map_screen.dart';
 import 'package:contractor_app/ui_screens/menu_bar/attendance_calendar.dart';
 import 'package:contractor_app/ui_screens/menu_bar/attendance_history.dart';
@@ -112,16 +115,7 @@ void showLogoutPopup(BuildContext context) {
 }
 
 class HomeScreen extends ConsumerStatefulWidget {
-  final String selectedLanguageCode;
-  final Function(String) onLanguageChanged;
-
-  const HomeScreen({
-    super.key,
-    this.selectedLanguageCode = 'en',
-    this.onLanguageChanged = _noop,
-  });
-
-  static void _noop(String _) {}
+  const HomeScreen({super.key});
 
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
@@ -130,7 +124,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool _isPunchedIn = false;
   bool _isPunchedOut = false;
-  //int _currentIndex = 0;
 
   final Map<String, String> languageMap = const {
     'English': 'en',
@@ -146,9 +139,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         return entry.key;
       }
     }
-    return 'English'; // Default fallback
+    return 'English'; // default fallback
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -157,25 +149,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
 
+    final projectsAsync = ref.watch(projectProvider);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          loc.home,
-          style: const TextStyle(fontFamily: 'Source Sans 3'),
+        title: const Text(
+          "Projects",
+          style: TextStyle(fontFamily: 'Source Sans 3'),
         ),
         centerTitle: true,
         automaticallyImplyLeading: false,
-        leading: Builder(
-          builder:
-              (BuildContext context) => IconButton(
-                icon: const Icon(Icons.menu),
-                onPressed: () {
-                  Scaffold.of(context).openDrawer();
-                },
-              ),
-        ),
       ),
-       bottomNavigationBar: Navbar2(),
+      bottomNavigationBar: const Navbar2(),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -193,72 +178,49 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.calendar_today),
-              title: Text(
-                '${loc.attendanceCalendar} >',
-                style: const TextStyle(fontFamily: 'Source Sans 3'),
-              ),
+              title: Text('${loc.attendanceCalendar} >'),
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => const AttendenceCal(),
-                  ),
+                  MaterialPageRoute(builder: (context) => const AttendenceCal()),
                 );
               },
             ),
             ListTile(
               leading: const Icon(Icons.payment),
-              title: Text(
-                '${loc.paymentHistory} >',
-                style: const TextStyle(fontFamily: 'Source Sans 3'),
-              ),
+              title: Text('${loc.paymentHistory} >'),
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => const PaymentHistory(),
-                  ),
+                  MaterialPageRoute(builder: (context) => const PaymentHistory()),
                 );
               },
             ),
             ListTile(
               leading: const Icon(Icons.edit_calendar),
-              title: Text(
-                '${loc.attendanceHistory}   >',
-                style: const TextStyle(fontFamily: 'Source Sans 3'),
-              ),
+              title: Text('${loc.attendanceHistory} >'),
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => const Attendence_History(),
-                  ),
+                  MaterialPageRoute(builder: (context) => const Attendence_History()),
                 );
               },
             ),
             ListTile(
               leading: const Icon(Icons.language),
-              title: Text(
-                loc.selectLanguage,
-                style: const TextStyle(fontFamily: 'Source Sans 3'),
-              ),
+              title: Text(loc.selectLanguage),
               trailing: DropdownButton<String>(
                 value: getLanguageFromCode(currentLocaleCode),
-                items:
-                    languages
-                        .map(
-                          (lang) => DropdownMenuItem<String>(
-                            value: lang,
-                            child: Text(lang),
-                          ),
-                        )
-                        .toList(),
+                items: languages
+                    .map((lang) => DropdownMenuItem<String>(
+                          value: lang,
+                          child: Text(lang),
+                        ))
+                    .toList(),
                 onChanged: (value) {
                   if (value != null) {
                     final languageCode = languageMap[value] ?? 'en';
-                    ref
-                        .read(localeProvider.notifier)
-                        .setLocale(Locale(languageCode));
+                    ref.read(localeProvider.notifier).setLocale(Locale(languageCode));
                   }
                 },
               ),
@@ -266,21 +228,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             SizedBox(height: height * 0.4),
             ListTile(
               leading: const Icon(Icons.settings),
-              title: Text(
-                '${loc.settings}   >',
-                style: const TextStyle(fontFamily: 'Source Sans 3'),
-              ),
+              title: Text('${loc.settings} >'),
               onTap: () {
                 showLogoutPopup(context);
               },
             ),
-            SizedBox(height: height * 0.006),
             ListTile(
               leading: const Icon(Icons.logout),
-              title: Text(
-                '${loc.logout}   >',
-                style: const TextStyle(fontFamily: 'Source Sans 3'),
-              ),
+              title: Text('${loc.logout} >'),
               onTap: () {
                 showLogoutPopup(context);
               },
@@ -288,15 +243,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ],
         ),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.only(
-            top: height * 0.025,
-            left: width * 0.032,
-            right: width * 0.032,
-          ),
-          child: Column(
-            children: List.generate(10, (index) {
+      body: projectsAsync.when(
+        data: (projectModel) {
+          final projects = projectModel.totalProjects ?? [];
+          if (projects.isEmpty) {
+            return const Center(child: Text("No projects available"));
+          }
+          return ListView.builder(
+            padding: EdgeInsets.all(width * 0.03),
+            itemCount: projects.length,
+            itemBuilder: (context, index) {
+              final project = projects[index];
               return Container(
                 margin: EdgeInsets.only(bottom: height * 0.02),
                 child: Card(
@@ -306,19 +263,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Image.asset(
-                          'assets/images/Elevation1.png',
-                          width: width * 0.25,
-                          height: height * 0.16,
-                          fit: BoxFit.cover,
-                        ),
+                        project.projectImageUrl != null
+                            ? Image.network(
+                                project.projectImageUrl!,
+                                width: width * 0.25,
+                                height: height * 0.16,
+                                fit: BoxFit.cover,
+                                errorBuilder: (ctx, err, stack) =>
+                                    const Icon(Icons.broken_image, size: 60),
+                              )
+                            : Image.asset(
+                                'assets/images/Elevation1.png',
+                                width: width * 0.25,
+                                height: height * 0.16,
+                                fit: BoxFit.cover,
+                              ),
                         SizedBox(width: width * 0.035),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                loc.projectTitle,
+                                project.name ?? "Untitled Project",
                                 style: TextStyle(
                                   fontSize: width * 0.037,
                                   fontWeight: FontWeight.bold,
@@ -328,7 +294,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               ),
                               SizedBox(height: height * 0.01),
                               Text(
-                                loc.projectAddress,
+                                project.address ?? "No Address",
                                 style: TextStyle(
                                   fontSize: width * 0.029,
                                   color: Colors.black54,
@@ -340,29 +306,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   ElevatedButton(
-                                    onPressed:
-                                        _isPunchedIn
-                                            ? null
-                                            : () {
-                                              setState(() {
-                                                _isPunchedIn = true;
-                                                _isPunchedOut = false;
-                                              });
-        
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder:
-                                                      (context) =>
-                                                          const PermissionScreen(),
-                                                ),
-                                              );
-                                            },
+                                    onPressed: _isPunchedIn
+                                        ? null
+                                        : () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    const PermissionScreen(),
+                                              ),
+                                            );
+                                            setState(() {
+                                              _isPunchedIn = true;
+                                              _isPunchedOut = false;
+                                            });
+                                          },
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor:
-                                          _isPunchedIn
-                                              ? Colors.grey
-                                              : const Color(0xFFE85426),
+                                      backgroundColor: _isPunchedIn
+                                          ? Colors.grey
+                                          : const Color(0xFFE85426),
                                       padding: EdgeInsets.symmetric(
                                         horizontal: width * 0.05,
                                         vertical: height * 0.012,
@@ -372,7 +334,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       ),
                                     ),
                                     child: Text(
-                                      loc.punchIn,
+                                      "Punch In",
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontFamily: 'Source Sans 3',
@@ -381,20 +343,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     ),
                                   ),
                                   ElevatedButton(
-                                    onPressed:
-                                        _isPunchedIn && !_isPunchedOut
-                                            ? () {
-                                              setState(() {
-                                                _isPunchedOut = true;
-                                                _isPunchedIn = false;
-                                              });
-                                            }
-                                            : null,
+                                    onPressed: _isPunchedIn && !_isPunchedOut
+                                        ? () {
+                                            setState(() {
+                                              _isPunchedOut = true;
+                                              _isPunchedIn = false;
+                                            });
+                                          }
+                                        : null,
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor:
-                                          _isPunchedOut
-                                              ? Colors.grey
-                                              : const Color(0xFFE85426),
+                                      backgroundColor: _isPunchedOut
+                                          ? Colors.grey
+                                          : const Color(0xFFE85426),
                                       padding: EdgeInsets.symmetric(
                                         horizontal: width * 0.05,
                                         vertical: height * 0.012,
@@ -404,7 +364,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       ),
                                     ),
                                     child: Text(
-                                      loc.punchOut,
+                                      "Punch Out",
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontFamily: 'Source Sans 3',
@@ -422,9 +382,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 ),
               );
-            }),
-          ),
-        ),
+            },
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, _) => Center(child: Text("Error: $err")),
       ),
     );
   }

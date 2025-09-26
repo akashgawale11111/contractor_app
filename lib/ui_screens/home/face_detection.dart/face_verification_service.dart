@@ -4,7 +4,6 @@
 // import 'dart:ui' as ui;
 // import 'package:flutter/services.dart' show rootBundle;
 // import 'package:flutter/material.dart';
-// import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 // import 'package:path_provider/path_provider.dart';
 
 // class FaceVerificationService {

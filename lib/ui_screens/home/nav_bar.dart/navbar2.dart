@@ -1,4 +1,4 @@
-import 'package:contractor_app/riverpod/labour_provider.dart';
+import 'package:contractor_app/logic/riverpod/labour_provider.dart';
 import 'package:contractor_app/ui_screens/home/home_screen.dart';
 import 'package:contractor_app/ui_screens/profile_screens/profile_screen.dart';
 import 'package:flutter/material.dart';

@@ -1,10 +1,9 @@
 import 'dart:convert';
-
 import 'package:contractor_app/custom_Widgets/custom_button.dart';
 import 'package:contractor_app/custom_Widgets/custom_password_field.dart';
 import 'package:contractor_app/custom_Widgets/custom_text_field.dart';
 import 'package:contractor_app/models/user_model.dart';
-import 'package:contractor_app/riverpod/labour_provider.dart';
+import 'package:contractor_app/logic/riverpod/labour_provider.dart';
 import 'package:contractor_app/ui_screens/home/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -45,9 +44,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ref.read(labourProvider.notifier).state = userModel.labour;
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(
-              builder: (context) => const HomeScreen(),
-            ),
+            MaterialPageRoute(builder: (context) => const HomeScreen()),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -60,9 +57,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: $e")));
     }
 
     setState(() => loading = false);
@@ -92,7 +89,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 const SizedBox(height: 20),
                 CustomTextField(
                   controller: uidController,
-                  hintText: 'Phone Number',
+                  hintText: 'Uid Number',
                   keyboardType: TextInputType.phone,
                 ),
                 CustomPasswordField(
@@ -104,10 +101,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 const SizedBox(height: 20),
                 loading
                     ? const CircularProgressIndicator()
-                    : CustomButton(
-                        onPressed: loginUser,
-                        text: 'Log In',
-                      ),
+                    : CustomButton(onPressed: loginUser, text: 'Log In'),
               ],
             ),
           ),

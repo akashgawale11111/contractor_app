@@ -1,7 +1,9 @@
 import 'package:contractor_app/ui_screens/authentication/login/loginscreen.dart';
+import 'package:contractor_app/ui_screens/home/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends HookWidget {
   const SplashScreen({super.key});
@@ -11,21 +13,34 @@ class SplashScreen extends HookWidget {
     final isLoading = useState(false);
     final statusMessage = useState('Initializing...');
 
-    // Handle app initialization
+    // Initialize app and check login status
     Future<void> initializeApp() async {
       isLoading.value = true;
-      // Simulate loading
-      await Future.delayed(const Duration(seconds: 5));
+      statusMessage.value = 'Checking login status...';
 
-      // Navigate to login screen
+      final prefs = await SharedPreferences.getInstance();
+      await Future.delayed(const Duration(seconds: 2)); // Simulate loading
+
+      final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+
       if (!context.mounted) return;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-      );
+
+      if (isLoggedIn) {
+        // ✅ Go to Home if logged in
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => HomeScreen()),
+        );
+      } else {
+        // ❌ Go to Login if not
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+        );
+      }
     }
 
-    // Initialize app when widget is built
+    // useEffect to run init on widget build
     useEffect(() {
       initializeApp();
       return null;
@@ -47,7 +62,7 @@ class SplashScreen extends HookWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // App logo/icon
+              // Logo
               Container(
                 width: 120,
                 height: 120,
@@ -55,10 +70,7 @@ class SplashScreen extends HookWidget {
                   color: Colors.white.withOpacity(0.2),
                   shape: BoxShape.circle,
                 ),
-                child:  Image.asset(
-                  'assets/images/mmprecise.png',
-                  height: 100,
-                ),
+                child: Image.asset('assets/images/mmprecise.png', height: 100),
               ),
               const SizedBox(height: 32),
 
@@ -87,8 +99,6 @@ class SplashScreen extends HookWidget {
                   style: GoogleFonts.poppins(color: Colors.white, fontSize: 16),
                 ),
               ],
-
-              // Retry button if initialization fails
               if (!isLoading.value) ...[
                 ElevatedButton(
                   onPressed: initializeApp,

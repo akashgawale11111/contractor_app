@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:contractor_app/ui_screens/home/face_detection.dart/aws_facerecognition.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';

@@ -1,20 +1,23 @@
 import 'dart:io';
-import 'package:aws_client/rekognition_2016_06_27.dart' as aws;
+import 'package:contractor_app/ui_screens/home/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
+import 'package:aws_client/rekognition_2016_06_27.dart' as aws;
+import 'package:intl/intl.dart';
 
+import 'package:contractor_app/logic/riverpod/labour_provider.dart';
 
-class FaceCompareAWS extends StatefulWidget {
+class FaceCompareAWS extends ConsumerStatefulWidget {
   const FaceCompareAWS({super.key});
 
   @override
-  State<FaceCompareAWS> createState() => _FaceCompareAWSState();
+  ConsumerState<FaceCompareAWS> createState() => _FaceCompareAWSState();
 }
 
-class _FaceCompareAWSState extends State<FaceCompareAWS> {
-  File? _image1, _image2;
-  final picker = ImagePicker();
-  String _result = "";
+class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
+  File? _selfieImage;
   bool _isComparing = false;
 
   late final aws.Rekognition rekognition;
@@ -25,131 +28,175 @@ class _FaceCompareAWSState extends State<FaceCompareAWS> {
     rekognition = aws.Rekognition(
       region: "ap-south-1",
       credentials: aws.AwsClientCredentials(
-        accessKey: "AKIAQTXFPFMNBGZN7NVV",
+        accessKey: "AKIAQTXFPFMNBGZN7NVV", // Replace with secure env values
         secretKey: "lay+TFsjjZmcG8wOquekqM9u2WcmVICVwmODket7",
       ),
     );
   }
 
-  Future<void> _pickImage(int index, ImageSource source) async {
-    final picked = await picker.pickImage(source: source);
-    if (picked != null) {
-      setState(() {
-        if (index == 1) {
-          _image1 = File(picked.path);
-        } else {
-          _image2 = File(picked.path);
-        }
-      });
-    }
-  }
+  Future<void> _takeSelfieAndCompare(String labourImageUrl, String name) async {
+    final picked = await ImagePicker().pickImage(source: ImageSource.camera);
+    if (picked == null) return;
 
-  Future<void> _compareFaces() async {
-    if (_image1 == null || _image2 == null) {
-      setState(() => _result = "⚠️ Please select both images!");
-      return;
-    }
-
-    setState(() {
-      _isComparing = true;
-      _result = "🔍 Comparing...";
-    });
+    _selfieImage = File(picked.path);
+    setState(() => _isComparing = true);
 
     try {
-      final bytes1 = await _image1!.readAsBytes();
-      final bytes2 = await _image2!.readAsBytes();
+      final selfieBytes = await _selfieImage!.readAsBytes();
+      final networkImage = await http.get(Uri.parse(labourImageUrl));
+
+      if (networkImage.statusCode != 200) {
+        throw Exception("Failed to load labour image.");
+      }
 
       final response = await rekognition.compareFaces(
-        sourceImage: aws.Image(bytes: bytes1),
-        targetImage: aws.Image(bytes: bytes2),
+        sourceImage: aws.Image(bytes: selfieBytes),
+        targetImage: aws.Image(bytes: networkImage.bodyBytes),
         similarityThreshold: 80,
       );
 
-      if (response.faceMatches != null && response.faceMatches!.isNotEmpty) {
-        final match = response.faceMatches!.first.similarity;
-        setState(() => _result =
-            "✅ Face Matched! (Similarity: ${match?.toStringAsFixed(2)}%)");
+      final match = response.faceMatches?.firstOrNull;
+
+      if (match != null && match.similarity != null) {
+        _showSuccessPopup(name, _selfieImage!);
       } else {
-        setState(() => _result = "❌ Faces do not match.");
+        _showErrorDialog("Face does not match.");
       }
     } catch (e) {
-      setState(() => _result = "❌ Error: ${e.toString()}");
+      _showErrorDialog("Error: ${e.toString()}");
     } finally {
       setState(() => _isComparing = false);
     }
   }
 
+  void _showSuccessPopup(String name, File selfieImage) {
+    final punchInTime = DateFormat.jm().format(DateTime.now());
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        contentPadding: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              "You Have Successfully Punched In.",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            CircleAvatar(
+              radius: 40,
+              backgroundImage: FileImage(selfieImage),
+            ),
+            const SizedBox(height: 12),
+            Text("Name: $name", style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text("Punch In Time: $punchInTime", style: const TextStyle(fontSize: 14)),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+              ),
+              onPressed: () =>Navigator.push(context, MaterialPageRoute(builder: (_)=> HomeScreen())),
+              child: const Text("Done", style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Face Match Failed"),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
+          )
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final labour = ref.watch(labourProvider);
+
     return Scaffold(
-      appBar: AppBar(title: const Text("AWS Face Recognition")),
+      appBar: AppBar(title: const Text("Location")),
       body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              CircleAvatar(
-                radius: 50,
-                backgroundImage: _image1 != null ? FileImage(_image1!) : null,
-                child: _image1 == null ? const Text("Image 1") : null,
+          const SizedBox(height: 16),
+          if (_selfieImage == null) ...[
+            const Center(
+              child: Text(
+                "Center Your Face",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
-              CircleAvatar(
-                radius: 50,
-                backgroundImage: _image2 != null ? FileImage(_image2!) : null,
-                child: _image2 == null ? const Text("Image 2") : null,
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+              child: Text(
+                "Align your face to the center of the selfie area and then take photo",
+                textAlign: TextAlign.center,
               ),
-            ],
+            ),
+          ],
+          const SizedBox(height: 10),
+          Expanded(
+            child: Center(
+              child: CircleAvatar(
+                radius: 100,
+                backgroundImage:
+                    _selfieImage != null ? FileImage(_selfieImage!) : null,
+                child: _selfieImage == null
+                    ? const Icon(Icons.camera_alt, size: 50)
+                    : null,
+              ),
+            ),
           ),
+          const SizedBox(height: 10),
+          if (_isComparing)
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: CircularProgressIndicator(),
+            )
+          else
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.flash_on),
+                  onPressed: () {}, // Optional: Flash toggle logic
+                ),
+                ElevatedButton(
+                  onPressed: (labour?.imageUrl != null && labour?.email != null)
+                      ? () => _takeSelfieAndCompare(
+                            labour!.imageUrl!,
+                            labour.email!,
+                          )
+                      : null,
+                  style: ElevatedButton.styleFrom(
+                    shape: const CircleBorder(),
+                    padding: const EdgeInsets.all(20),
+                  ),
+                  child: const Icon(Icons.camera, size: 30),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.cameraswitch),
+                  onPressed: () {}, // Optional: Switch camera logic
+                ),
+              ],
+            ),
           const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: _isComparing ? null : _compareFaces,
-            child: _isComparing
-                ? const CircularProgressIndicator()
-                : const Text("Compare Faces"),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            _result,
-            textAlign: TextAlign.center,
-            style:
-                const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 40),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              ElevatedButton.icon(
-                icon: const Icon(Icons.camera_alt),
-                label: const Text("Selfie 1"),
-                onPressed: () => _pickImage(1, ImageSource.camera),
-              ),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.photo),
-                label: const Text("Gallery 1"),
-                onPressed: () => _pickImage(1, ImageSource.gallery),
-              ),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              ElevatedButton.icon(
-                icon: const Icon(Icons.camera_alt),
-                label: const Text("Selfie 2"),
-                onPressed: () => _pickImage(2, ImageSource.camera),
-              ),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.photo),
-                label: const Text("Gallery 2"),
-                onPressed: () => _pickImage(2, ImageSource.gallery),
-              ),
-            ],
-          ),
         ],
       ),
     );
   }
 }
-
-

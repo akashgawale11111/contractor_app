@@ -1,4 +1,5 @@
 import 'package:contractor_app/models/user_model.dart';
+import 'package:contractor_app/ui_screens/home/nav_bar.dart/navbar2.dart';
 import 'package:flutter/material.dart';
 
 // PROFILE SCREEN
@@ -13,8 +14,7 @@ class ProfileScreen extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("$title: ",
-              style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text("$title: ", style: const TextStyle(fontWeight: FontWeight.bold)),
           Expanded(child: Text(value ?? "")),
         ],
       ),
@@ -25,6 +25,7 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("User Profile")),
+      bottomNavigationBar: Navbar2(),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(

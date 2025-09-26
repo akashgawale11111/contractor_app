@@ -1,6 +1,5 @@
 import 'package:contractor_app/custom_Widgets/custom_button.dart';
 import 'package:contractor_app/custom_Widgets/custom_text_field.dart';
-import 'package:contractor_app/ui_screens/authentication/phoneNumber/otp_screen.dart';
 import 'package:flutter/material.dart';
 
 class PhoneNumberScreen extends StatefulWidget {
@@ -46,7 +45,7 @@ class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
                 CustomButton(
                   text: 'Send OTP',
                   onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_)=> OtpScreen()));
+                   // Navigator.push(context, MaterialPageRoute(builder: (_)=> OtpScreen()));
                   },
                 ),
               ],
