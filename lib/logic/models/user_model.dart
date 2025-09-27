@@ -41,31 +41,32 @@ class Labour {
   String? updatedAt;
   String? imageUrl;
 
-  Labour(
-      {this.id,
-      this.labourId,
-      this.firstName,
-      this.lastName,
-      this.email,
-      this.phoneNumber,
-      this.age,
-      this.gender,
-      this.dateOfBirth,
-      this.address,
-      this.city,
-      this.state,
-      this.pincode,
-      this.photograph,
-      this.aadharNumber,
-      this.panCardNumber,
-      this.governmentRegistrationNumber,
-      this.skillLevel,
-      this.specialization,
-      this.dailyWage,
-      this.status,
-      this.createdAt,
-      this.updatedAt,
-      this.imageUrl});
+  Labour({
+    this.id,
+    this.labourId,
+    this.firstName,
+    this.lastName,
+    this.email,
+    this.phoneNumber,
+    this.age,
+    this.gender,
+    this.dateOfBirth,
+    this.address,
+    this.city,
+    this.state,
+    this.pincode,
+    this.photograph,
+    this.aadharNumber,
+    this.panCardNumber,
+    this.governmentRegistrationNumber,
+    this.skillLevel,
+    this.specialization,
+    this.dailyWage,
+    this.status,
+    this.createdAt,
+    this.updatedAt,
+    this.imageUrl,
+  });
 
   Labour.fromJson(Map<String, dynamic> json) {
     id = json['id'];

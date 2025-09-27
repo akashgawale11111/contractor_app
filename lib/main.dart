@@ -1,7 +1,7 @@
 import 'package:contractor_app/language/lib/l10n/app_localizations.dart';
 import 'package:contractor_app/language/lib/l10n/language_provider.dart';
-import 'package:contractor_app/theme/app_theme.dart';
-import 'package:contractor_app/theme/theme_provider.dart';
+import 'package:contractor_app/utils/theme/app_theme.dart';
+import 'package:contractor_app/utils/theme/theme_provider.dart';
 import 'package:contractor_app/ui_screens/splash_screen/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';

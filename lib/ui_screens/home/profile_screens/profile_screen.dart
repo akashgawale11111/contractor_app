@@ -1,4 +1,4 @@
-import 'package:contractor_app/models/user_model.dart';
+import 'package:contractor_app/logic/models/user_model.dart';
 import 'package:contractor_app/ui_screens/home/nav_bar.dart/navbar2.dart';
 import 'package:flutter/material.dart';
 

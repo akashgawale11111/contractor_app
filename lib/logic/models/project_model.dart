@@ -4,15 +4,21 @@ class ProjectModel {
   int? statusCode;
   String? message;
 
-  ProjectModel({this.totalProjects, this.status, this.statusCode, this.message});
+  ProjectModel({
+    this.totalProjects,
+    this.status,
+    this.statusCode,
+    this.message,
+  });
 
   factory ProjectModel.fromJson(Map<String, dynamic> json) {
     return ProjectModel(
-      totalProjects: json['total_projects'] != null
-          ? (json['total_projects'] as List)
-              .map((v) => TotalProjects.fromJson(v))
-              .toList()
-          : [],
+      totalProjects:
+          json['total_projects'] != null
+              ? (json['total_projects'] as List)
+                  .map((v) => TotalProjects.fromJson(v))
+                  .toList()
+              : [],
       status: json['status'],
       statusCode: json['status_code'],
       message: json['message'],

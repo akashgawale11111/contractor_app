@@ -1,9 +1,9 @@
 import 'dart:convert';
-import 'package:contractor_app/custom_Widgets/custom_button.dart';
-import 'package:contractor_app/custom_Widgets/custom_password_field.dart';
-import 'package:contractor_app/custom_Widgets/custom_text_field.dart';
-import 'package:contractor_app/models/user_model.dart';
-import 'package:contractor_app/logic/riverpod/labour_provider.dart';
+import 'package:contractor_app/logic/Apis/provider.dart';
+import 'package:contractor_app/utils/custom_Widgets/custom_button.dart';
+import 'package:contractor_app/utils/custom_Widgets/custom_password_field.dart';
+import 'package:contractor_app/utils/custom_Widgets/custom_text_field.dart';
+import 'package:contractor_app/logic/models/user_model.dart';
 import 'package:contractor_app/ui_screens/home/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

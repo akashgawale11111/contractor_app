@@ -1,4 +1,3 @@
-import 'package:contractor_app/ui_screens/home/nav_bar.dart/navbar.dart';
 import 'package:contractor_app/ui_screens/home/nav_bar.dart/navbar2.dart';
 import 'package:flutter/material.dart';
 

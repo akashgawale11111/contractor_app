@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:contractor_app/logic/Apis/provider.dart';
 import 'package:contractor_app/ui_screens/home/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -7,7 +8,6 @@ import 'package:http/http.dart' as http;
 import 'package:aws_client/rekognition_2016_06_27.dart' as aws;
 import 'package:intl/intl.dart';
 
-import 'package:contractor_app/logic/riverpod/labour_provider.dart';
 
 class FaceCompareAWS extends ConsumerStatefulWidget {
   const FaceCompareAWS({super.key});
