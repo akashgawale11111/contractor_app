@@ -10,18 +10,21 @@ class Navbar2 extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final labour = ref.watch(labourProvider);
+    final width = MediaQuery.of(context).size.width;
+    final height = MediaQuery.of(context).size.height;
     int selectedIndex = 0;
+
     return Container(
-      height: 80,
-      margin: const EdgeInsets.all(8),
+      height: height * 0.1, // 10% of screen height
+      margin: EdgeInsets.all(width * 0.02), // 2% of screen width
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12.0),
+        borderRadius: BorderRadius.circular(width * 0.03), // 3% of screen width
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.5),
-            spreadRadius: 2,
-            blurRadius: 5,
-            offset: const Offset(0, 3),
+            spreadRadius: width * 0.005, // 0.5% of screen width
+            blurRadius: width * 0.012, // 1.2% of screen width
+            offset: Offset(0, height * 0.004), // 0.4% of screen height
           ),
         ],
         color: Colors.white,
@@ -30,13 +33,14 @@ class Navbar2 extends ConsumerWidget {
         clipBehavior: Clip.none,
         children: [
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: EdgeInsets.all(width * 0.02), // 2% of screen width
             child: Center(
               child: Container(
-                height: 70,
+                height: height * 0.088, // 8.8% of screen height
                 decoration: BoxDecoration(
                   color: const Color(0xFFE85426),
-                  borderRadius: BorderRadius.circular(12.0),
+                  borderRadius:
+                      BorderRadius.circular(width * 0.03), // 3% of screen width
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -53,12 +57,20 @@ class Navbar2 extends ConsumerWidget {
                       },
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Icon(Icons.home, color: Colors.white),
-                          SizedBox(height: 5),
+                        children: [
+                          Icon(
+                            Icons.home,
+                            color: Colors.white,
+                            size: width * 0.06, // 6% of screen width
+                          ),
+                          SizedBox(
+                              height: height * 0.006), // 0.6% of screen height
                           Text(
                             'Home',
-                            style: TextStyle(color: Colors.white, fontSize: 10),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: width * 0.025, // 2.5% of screen width
+                            ),
                           ),
                         ],
                       ),
@@ -70,19 +82,28 @@ class Navbar2 extends ConsumerWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => ProfileScreen(labour: labour),
+                              builder: (context) =>
+                                  ProfileScreen(labour: labour),
                             ),
                           );
                         }
                       },
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Icon(Icons.person_2_outlined, color: Colors.white),
-                          SizedBox(height: 5),
+                        children: [
+                          Icon(
+                            Icons.person_2_outlined,
+                            color: Colors.white,
+                            size: width * 0.06, // 6% of screen width
+                          ),
+                          SizedBox(
+                              height: height * 0.006), // 0.6% of screen height
                           Text(
                             'Profile',
-                            style: TextStyle(color: Colors.white, fontSize: 10),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: width * 0.025, // 2.5% of screen width
+                            ),
                           ),
                         ],
                       ),
@@ -93,12 +114,14 @@ class Navbar2 extends ConsumerWidget {
             ),
           ),
           Positioned(
-            top: -5,
-            left: selectedIndex == 0 ? 293 : 293,
+            top: -height * 0.006, // -0.6% of screen height
+            left: selectedIndex == 0
+                ? width * 0.67
+                : width * 0.67, // 73% of screen width for both (centered)
             child: Image.asset(
               'assets/icon/Nav_Icon_Selector.png',
-              height: 30,
-              width: 30,
+              height: height * 0.038, // 3.8% of screen height
+              width: width * 0.075, // 7.5% of screen width
             ),
           ),
         ],

@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:contractor_app/ui_screens/home/verificationScreen/face_detection/aws_facerecognition.dart';
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart' as gmaps;
 
 /// Screen 1 - Ask Location Permission
 class PermissionScreen extends StatelessWidget {
@@ -45,7 +45,8 @@ class PermissionScreen extends StatelessWidget {
     return true;
   }
 
-  Future<void> _requestLocation(BuildContext context) async {
+  Future<void> _requestLocation(BuildContext context,
+      {bool isOneTime = false}) async {
     bool gpsEnabled = await _checkAndRequestGPS(context);
     if (!gpsEnabled) {
       if (!context.mounted) return;
@@ -162,9 +163,11 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen> {
-  LatLng? _currentLatLng;
+  gmaps.LatLng? _currentLatLng;
   String _address = "Fetching address...";
   String _dateTime = "";
+  gmaps.GoogleMapController? _mapController;
+  gmaps.CameraPosition? _initialCameraPosition;
 
   @override
   void initState() {
@@ -187,8 +190,15 @@ class _MapScreenState extends State<MapScreen> {
         desiredAccuracy: LocationAccuracy.high,
       );
 
+      gmaps.LatLng currentLatLng =
+          gmaps.LatLng(position.latitude, position.longitude);
+
       setState(() {
-        _currentLatLng = LatLng(position.latitude, position.longitude);
+        _currentLatLng = currentLatLng;
+        _initialCameraPosition = gmaps.CameraPosition(
+          target: currentLatLng,
+          zoom: 16,
+        );
         _dateTime = DateTime.now().toLocal().toString().substring(0, 16);
       });
 
@@ -225,16 +235,17 @@ class _MapScreenState extends State<MapScreen> {
         children: [
           _currentLatLng == null
               ? const Center(child: CircularProgressIndicator())
-              : GoogleMap(
-                initialCameraPosition: CameraPosition(
-                  target: _currentLatLng ?? const LatLng(20.5937, 78.9629),
-                  zoom: 16,
+              : gmaps.GoogleMap(
+                  initialCameraPosition: _initialCameraPosition ??
+                      const gmaps.CameraPosition(
+                        target: gmaps.LatLng(20.5937, 78.9629),
+                        zoom: 16,
+                      ),
+                  myLocationEnabled: true,
+                  myLocationButtonEnabled: true,
+                  compassEnabled: true,
+                  zoomControlsEnabled: false,
                 ),
-                myLocationEnabled: true,
-                myLocationButtonEnabled: true,
-                compassEnabled: true,
-                zoomControlsEnabled: false,
-              ),
           Positioned(
             top: 20,
             left: 20,
@@ -272,7 +283,8 @@ class _MapScreenState extends State<MapScreen> {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(Icons.access_time, size: 14, color: Colors.black54),
+                      const Icon(Icons.access_time,
+                          size: 14, color: Colors.black54),
                       const SizedBox(width: 4),
                       Text(_dateTime, style: const TextStyle(fontSize: 12)),
                     ],
@@ -294,7 +306,8 @@ class _MapScreenState extends State<MapScreen> {
                 ),
               ),
               onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => FaceCompareAWS()));
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => FaceCompareAWS()));
                 // ScaffoldMessenger.of(context).showSnackBar(
                 //   SnackBar(content: Text("Location Saved: $_address")),
                 // );

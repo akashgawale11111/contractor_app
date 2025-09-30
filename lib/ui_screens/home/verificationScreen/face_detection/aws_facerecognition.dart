@@ -8,7 +8,6 @@ import 'package:http/http.dart' as http;
 import 'package:aws_client/rekognition_2016_06_27.dart' as aws;
 import 'package:intl/intl.dart';
 
-
 class FaceCompareAWS extends ConsumerStatefulWidget {
   const FaceCompareAWS({super.key});
 
@@ -70,7 +69,11 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
   }
 
   void _showSuccessPopup(String name, File selfieImage) {
-    final punchInTime = DateFormat.jm().format(DateTime.now());
+    final punchTime = DateFormat.jm().format(DateTime.now());
+
+    // Get the action type from route settings
+    final actionType =
+        ModalRoute.of(context)?.settings.arguments as String? ?? 'punch_in';
 
     showDialog(
       context: context,
@@ -81,10 +84,10 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              "You Have Successfully Punched In.",
+            Text(
+              "You Have Successfully ${actionType == 'punch_in' ? 'Punched In' : 'Punched Out'}.",
               textAlign: TextAlign.center,
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             CircleAvatar(
@@ -92,14 +95,28 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
               backgroundImage: FileImage(selfieImage),
             ),
             const SizedBox(height: 12),
-            Text("Name: $name", style: const TextStyle(fontWeight: FontWeight.bold)),
-            Text("Punch In Time: $punchInTime", style: const TextStyle(fontSize: 14)),
+            Text("Name: $name",
+                style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+                "${actionType == 'punch_in' ? 'Punch In' : 'Punch Out'} Time: $punchTime",
+                style: const TextStyle(fontSize: 14)),
             const SizedBox(height: 16),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange,
               ),
-              onPressed: () =>Navigator.push(context, MaterialPageRoute(builder: (_)=> HomeScreen())),
+              onPressed: () {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(
+                    builder: (context) => const HomeScreen(),
+                    settings: RouteSettings(arguments: {
+                      'isPunchedIn': actionType == 'punch_in',
+                      'isPunchedOut': actionType == 'punch_out',
+                    }),
+                  ),
+                  (Route<dynamic> route) => false,
+                );
+              },
               child: const Text("Done", style: TextStyle(color: Colors.white)),
             ),
           ],
