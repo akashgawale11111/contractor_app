@@ -139,6 +139,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   fontFamily: 'Source Sans 3',
                                 ),
                               ),
+                              Text(
+                                project.city ?? "No City",
+                                style: TextStyle(
+                                  fontSize: width * 0.029,
+                                  color: Colors.black54,
+                                  fontFamily: 'Source Sans 3',
+                                ),
+                              ),
+                              Text(
+                                project.state ?? "No State",
+                                style: TextStyle(
+                                  fontSize: width * 0.029,
+                                  color: Colors.black54,
+                                  fontFamily: 'Source Sans 3',
+                                ),
+                              ),
                               SizedBox(height: height * 0.012),
                               Row(
                                 mainAxisAlignment:
@@ -204,16 +220,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                             // Check if face detection was completed successfully
                                             if (result == true) {
                                               setState(() {
-                                                _isPunchedOut = true;
-                                                _isPunchedIn = false;
+                                                _isPunchedOut =
+                                                    true; // CHANGE HERE: Punch Out successful
+                                                _isPunchedIn =
+                                                    false; // CHANGE HERE: Punch In reset
                                               });
                                             }
                                           }
-                                        : null,
+                                        : null, //Disable if condition false
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: _isPunchedOut
-                                          ? Colors.grey
-                                          : const Color(0xFFE85426),
+                                      backgroundColor: (_isPunchedIn &&
+                                              !_isPunchedOut)
+                                          ? const Color(
+                                              0xFFE85426) // CHANGE HERE: valid state → orange
+                                          : Colors
+                                              .grey, // CHANGE HERE: invalid state → grey
+
                                       padding: EdgeInsets.symmetric(
                                         horizontal: width * 0.05,
                                         vertical: height * 0.012,
