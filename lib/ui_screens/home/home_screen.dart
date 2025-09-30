@@ -1,3 +1,5 @@
+import 'package:aws_client/code_build_2016_10_06.dart';
+import 'package:contractor_app/logic/models/project_model.dart';
 import 'package:contractor_app/language/lib/l10n/app_localizations.dart';
 import 'package:contractor_app/language/lib/l10n/language_provider.dart';
 import 'package:contractor_app/logic/Apis/provider.dart';
@@ -16,7 +18,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool _isPunchedIn = false;
-  bool _isPunchedOut = false;
+  Project? _punchedInProject;
 
   @override
   void didChangeDependencies() {
@@ -26,7 +28,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (arguments != null && arguments is Map<String, bool>) {
       setState(() {
         _isPunchedIn = arguments['isPunchedIn'] ?? false;
-        _isPunchedOut = arguments['isPunchedOut'] ?? false;
       });
     }
   }
@@ -145,14 +146,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   ElevatedButton(
-                                    onPressed: (!_isPunchedIn && !_isPunchedOut)
+                                    onPressed: (!_isPunchedIn)
                                         ? () async {
                                             final result = await Navigator.push(
                                               context,
                                               MaterialPageRoute(
                                                 builder: (context) =>
                                                     const PermissionScreen(),
-                                                settings: RouteSettings(
+                                                settings: const RouteSettings(
                                                     arguments: 'punch_in'),
                                               ),
                                             );
@@ -161,14 +162,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                             if (result == true) {
                                               setState(() {
                                                 _isPunchedIn = true;
-                                                _isPunchedOut = false;
                                               });
                                             }
                                           }
                                         : null,
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor:
-                                          (_isPunchedIn || _isPunchedOut)
+                                          _isPunchedIn
                                               ? Colors.grey
                                               : const Color(0xFFE85426),
                                       padding: EdgeInsets.symmetric(
@@ -189,14 +189,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     ),
                                   ),
                                   ElevatedButton(
-                                    onPressed: (_isPunchedIn && !_isPunchedOut)
+                                    onPressed: (_isPunchedIn)
                                         ? () async {
                                             final result = await Navigator.push(
                                               context,
                                               MaterialPageRoute(
                                                 builder: (context) =>
                                                     const PermissionScreen(),
-                                                settings: RouteSettings(
+                                                settings: const RouteSettings(
                                                     arguments: 'punch_out'),
                                               ),
                                             );
@@ -204,14 +204,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                             // Check if face detection was completed successfully
                                             if (result == true) {
                                               setState(() {
-                                                _isPunchedOut = true;
                                                 _isPunchedIn = false;
                                               });
                                             }
                                           }
                                         : null,
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: _isPunchedOut
+                                      backgroundColor: !_isPunchedIn
                                           ? Colors.grey
                                           : const Color(0xFFE85426),
                                       padding: EdgeInsets.symmetric(

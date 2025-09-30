@@ -57,7 +57,13 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
       final match = response.faceMatches?.firstOrNull;
 
       if (match != null && match.similarity != null) {
-        _showSuccessPopup(name, _selfieImage!);
+        final actionType =
+            ModalRoute.of(context)?.settings.arguments as String? ?? 'punch_in';
+        if (actionType == 'punch_in') {
+          _showPunchInPopup(name, _selfieImage!);
+        } else {
+          _showPunchOutPopup(name, _selfieImage!);
+        }
       } else {
         _showErrorDialog("Face does not match.");
       }
@@ -68,13 +74,8 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
     }
   }
 
-  void _showSuccessPopup(String name, File selfieImage) {
+  void _showPunchInPopup(String name, File selfieImage) {
     final punchTime = DateFormat.jm().format(DateTime.now());
-
-    // Get the action type from route settings
-    final actionType =
-        ModalRoute.of(context)?.settings.arguments as String? ?? 'punch_in';
-
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -84,10 +85,10 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              "You Have Successfully ${actionType == 'punch_in' ? 'Punched In' : 'Punched Out'}.",
+            const Text(
+              "You Have Successfully Punched In.",
               textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             CircleAvatar(
@@ -97,8 +98,7 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
             const SizedBox(height: 12),
             Text("Name: $name",
                 style: const TextStyle(fontWeight: FontWeight.bold)),
-            Text(
-                "${actionType == 'punch_in' ? 'Punch In' : 'Punch Out'} Time: $punchTime",
+            Text("Punch In Time: $punchTime",
                 style: const TextStyle(fontSize: 14)),
             const SizedBox(height: 16),
             ElevatedButton(
@@ -109,9 +109,60 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(
                     builder: (context) => const HomeScreen(),
-                    settings: RouteSettings(arguments: {
-                      'isPunchedIn': actionType == 'punch_in',
-                      'isPunchedOut': actionType == 'punch_out',
+                    settings: const RouteSettings(arguments: {
+                      'isPunchedIn': true,
+                      'isPunchedOut': false,
+                    }),
+                  ),
+                  (Route<dynamic> route) => false,
+                );
+              },
+              child: const Text("Done", style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showPunchOutPopup(String name, File selfieImage) {
+    final punchTime = DateFormat.jm().format(DateTime.now());
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        contentPadding: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              "You Have Successfully Punched Out.",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            CircleAvatar(
+              radius: 40,
+              backgroundImage: FileImage(selfieImage),
+            ),
+            const SizedBox(height: 12),
+            Text("Name: $name",
+                style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text("Punch Out Time: $punchTime",
+                style: const TextStyle(fontSize: 14)),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+              ),
+              onPressed: () {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(
+                    builder: (context) => const HomeScreen(),
+                    settings: const RouteSettings(arguments: {
+                      'isPunchedIn': false,
+                      'isPunchedOut': true,
                     }),
                   ),
                   (Route<dynamic> route) => false,
@@ -217,3 +268,6 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
     );
   }
 }
+
+
+
