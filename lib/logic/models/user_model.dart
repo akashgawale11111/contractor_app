@@ -13,6 +13,17 @@ class UserModel {
     message = json['message'];
     labour = json['labour'] != null ? Labour.fromJson(json['labour']) : null;
   }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['status'] = this.status;
+    data['status_code'] = this.statusCode;
+    data['message'] = this.message;
+    if (this.labour != null) {
+      data['labour'] = this.labour!.toJson();
+    }
+    return data;
+  }
 }
 
 class Labour {
@@ -93,5 +104,34 @@ class Labour {
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
     imageUrl = json['image_url'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['id'] = this.id;
+    data['labour_id'] = this.labourId;
+    data['first_name'] = this.firstName;
+    data['last_name'] = this.lastName;
+    data['email'] = this.email;
+    data['phone_number'] = this.phoneNumber;
+    data['age'] = this.age;
+    data['gender'] = this.gender;
+    data['date_of_birth'] = this.dateOfBirth;
+    data['address'] = this.address;
+    data['city'] = this.city;
+    data['state'] = this.state;
+    data['pincode'] = this.pincode;
+    data['photograph'] = this.photograph;
+    data['aadhar_number'] = this.aadharNumber;
+    data['pan_card_number'] = this.panCardNumber;
+    data['government_registration_number'] = this.governmentRegistrationNumber;
+    data['skill_level'] = this.skillLevel;
+    data['specialization'] = this.specialization;
+    data['daily_wage'] = this.dailyWage;
+    data['status'] = this.status;
+    data['created_at'] = this.createdAt;
+    data['updated_at'] = this.updatedAt;
+    data['image_url'] = this.imageUrl;
+    return data;
   }
 }

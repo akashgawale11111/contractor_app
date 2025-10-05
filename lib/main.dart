@@ -44,7 +44,7 @@ class MyApp extends ConsumerWidget {
         final width = mq.size.width;
         final scale = (width / 375.0).clamp(0.85, 1.25);
         return MediaQuery(
-          data: mq.copyWith(textScaleFactor: (scale as num).toDouble()),
+          data: mq.copyWith(textScaler: TextScaler.linear(scale)),
           child: child ?? const SizedBox.shrink(),
         );
       },

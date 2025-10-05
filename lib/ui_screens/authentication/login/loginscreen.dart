@@ -1,13 +1,9 @@
-import 'dart:convert';
 import 'package:contractor_app/logic/Apis/provider.dart';
+import 'package:contractor_app/ui_screens/apps_screen/navbar.dart';
 import 'package:contractor_app/utils/custom_Widgets/custom_button.dart';
-import 'package:contractor_app/utils/custom_Widgets/custom_password_field.dart';
 import 'package:contractor_app/utils/custom_Widgets/custom_text_field.dart';
-import 'package:contractor_app/logic/models/user_model.dart';
-import 'package:contractor_app/ui_screens/home/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -17,63 +13,39 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  final TextEditingController uidController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  bool loading = false;
+  final _labourIdController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _isLoading = false;
 
-  Future<void> loginUser() async {
-    setState(() => loading = true);
-    // user login API call
-
+  void _login() async {
+    setState(() => _isLoading = true);
     try {
-      var request = http.MultipartRequest(
-        'POST',
-        Uri.parse("http://admin.mmprecise.com/api/login"),
-      );
-      request.fields['labour_id'] = uidController.text.trim();
-      request.fields['password'] = passwordController.text.trim();
-
-      var response = await request.send();
-      var responseBody = await response.stream.bytesToString();
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(responseBody);
-        UserModel userModel = UserModel.fromJson(data);
-
-        if (userModel.labour != null) {
-          ref.read(labourProvider.notifier).state = userModel.labour;
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const HomeScreen()),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Invalid response: No labour data")),
-          );
-        }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Login failed: ${response.reasonPhrase}")),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(
+      await ref
+          .read(authProvider.notifier)
+          .login(_labourIdController.text, _passwordController.text);
+      // Navigate to profile screen
+      Navigator.pushReplacement(
         context,
-      ).showSnackBar(SnackBar(content: Text("Error: $e")));
+        MaterialPageRoute(builder: (_) => BottomNavExample()),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Login failed: $e")),
+      );
+    } finally {
+      setState(() => _isLoading = false);
     }
-
-    setState(() => loading = false);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: const Text("Login")),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: SingleChildScrollView(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 20),
                 Image.asset(
@@ -88,20 +60,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
                 const SizedBox(height: 20),
                 CustomTextField(
-                  controller: uidController,
-                  hintText: 'Uid Number',
-                  keyboardType: TextInputType.phone,
+                  controller: _labourIdController,
+                  hintText: 'Labour ID',
+                  keyboardType: TextInputType.text,
                 ),
-                CustomPasswordField(
-                  controller: passwordController,
-                  hintText: 'Enter Password',
+                CustomTextField(
+                  controller: _passwordController,
+                  hintText: 'Password',
+                  keyboardType: TextInputType.visiblePassword,
                 ),
-                const SizedBox(height: 5),
-                const SizedBox(height: 5),
                 const SizedBox(height: 20),
-                loading
+                _isLoading
                     ? const CircularProgressIndicator()
-                    : CustomButton(onPressed: loginUser, text: 'Log In'),
+                    : CustomButton(
+                        onPressed: _login,
+                        text: 'Login',
+                      ),
               ],
             ),
           ),

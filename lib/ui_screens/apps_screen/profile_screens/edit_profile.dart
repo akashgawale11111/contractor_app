@@ -1,4 +1,3 @@
-import 'package:contractor_app/ui_screens/home/nav_bar.dart/navbar2.dart';
 import 'package:flutter/material.dart';
 
 class EditProfile extends StatefulWidget {
@@ -38,7 +37,7 @@ class _EditProfileState extends State<EditProfile> {
           ),
           centerTitle: true,
         ),
-        bottomNavigationBar: Navbar2(),
+      //  bottomNavigationBar: Navbar3(),
         body: SingleChildScrollView(
           child: Center(
             child: Column(
