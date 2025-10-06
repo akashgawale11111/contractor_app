@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
-import 'package:contractor_app/logic/Apis/attendance_provider.dart';
+import 'package:contractor_app/logic/providers.dart';
+import 'package:contractor_app/logic/database_helper.dart';
 import 'package:contractor_app/logic/Apis/provider.dart';
 import 'package:contractor_app/ui_screens/apps_screen/menu_bar/custom_drawer.dart';
 import 'package:contractor_app/ui_screens/apps_screen/home/verificationScreen/map_screen/map_screen.dart';
@@ -19,7 +20,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final width = MediaQuery.of(context).size.width;
 
     final projectsAsync = ref.watch(projectProviderList);
-    final attendanceState = ref.watch(attendanceProvider);
+    final punchState = ref.watch(punchStateProvider);
 
     return Scaffold(
       body: projectsAsync.when(
@@ -29,9 +30,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             return const Center(child: Text("No projects available"));
           }
 
-          if (attendanceState.isPunchedIn) {
+          if (punchState['isPunchedIn']) {
             final punchedInProject = projects.firstWhereOrNull(
-                (p) => p.id == attendanceState.punchedInProjectId);
+                (p) => p.id.toString() == punchState['projectId']);
             if (punchedInProject == null) {
               return const Center(child: Text("Punched in project not found"));
             }
@@ -39,8 +40,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             // Sort projects to show punched-in project first
             final sortedProjects = projects.toList();
             sortedProjects.sort((a, b) {
-              if (a.id == punchedInProject.id) return -1;
-              if (b.id == punchedInProject.id) return 1;
+              if (a.id.toString() == punchState['projectId']) return -1;
+              if (b.id.toString() == punchState['projectId']) return 1;
               return 0;
             });
 
@@ -49,7 +50,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               itemCount: sortedProjects.length,
               itemBuilder: (context, index) {
                 final project = sortedProjects[index];
-                return _buildProjectCard(context, project, attendanceState);
+                return _buildProjectCard(context, project, punchState);
               },
             );
           } else {
@@ -58,7 +59,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               itemCount: projects.length,
               itemBuilder: (context, index) {
                 final project = projects[index];
-                return _buildProjectCard(context, project, attendanceState);
+                return _buildProjectCard(context, project, punchState);
               },
             );
           }
@@ -70,12 +71,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildProjectCard(
-      BuildContext context, dynamic project, AttendanceState attendanceState) {
+      BuildContext context, dynamic project, Map<String, dynamic> punchState) {
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
 
-    final isThisProjectPunchedIn = attendanceState.isPunchedIn &&
-        attendanceState.punchedInProjectId == project.id;
+    final isThisProjectPunchedIn = punchState['isPunchedIn'] &&
+        punchState['projectId'] == project.id.toString();
 
     return Container(
       margin: EdgeInsets.only(bottom: height * 0.02),
@@ -120,34 +121,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     Text(project.city ?? "No City"),
                     Text(project.state ?? "No State"),
                     SizedBox(height: height * 0.012),
-                    if (attendanceState.isLoading)
-                      const CircularProgressIndicator()
-                    else
-                      Row(
-                        children: [
-                          if (isThisProjectPunchedIn)
-                            ElevatedButton(
-                              onPressed: () => _navigateToPermissionScreen(
-                                  context, project.id, 'punch_out'),
-                              child: const Text("Punch Out",
-                                  style: TextStyle(fontSize: 12)),
-                            )
-                          else if (!attendanceState.isPunchedIn)
-                            ElevatedButton(
-                              onPressed: () => _navigateToPermissionScreen(
-                                  context, project.id, 'punch_in'),
-                              child: const Text("Punch In",
-                                  style: TextStyle(fontSize: 12)),
-                            )
-                          else if (attendanceState.isPunchedIn &&
-                              !isThisProjectPunchedIn)
-                            ElevatedButton(
-                              onPressed: null,
-                              child: const Text("Punch In",
-                                  style: TextStyle(fontSize: 12)),
-                            ),
-                        ],
-                      )
+                    Row(
+                      children: [
+                        if (isThisProjectPunchedIn)
+                          ElevatedButton(
+                            onPressed: () => _navigateToPermissionScreen(
+                                context, project.id.toString(), 'punch_out'),
+                            child: const Text("Punch Out",
+                                style: TextStyle(fontSize: 12)),
+                          )
+                        else if (!punchState['isPunchedIn'])
+                          ElevatedButton(
+                            onPressed: () => _navigateToPermissionScreen(
+                                context, project.id.toString(), 'punch_in'),
+                            child: const Text("Punch In",
+                                style: TextStyle(fontSize: 12)),
+                          )
+                        else if (punchState['isPunchedIn'] &&
+                            !isThisProjectPunchedIn)
+                          ElevatedButton(
+                            onPressed: null,
+                            child: const Text("Punch In",
+                                style: TextStyle(fontSize: 12)),
+                          ),
+                      ],
+                    )
                   ],
                 ),
               ),
@@ -159,7 +157,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _navigateToPermissionScreen(
-      BuildContext context, int projectId, String action) async {
+      BuildContext context, String projectId, String action) async {
     final result = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
@@ -172,9 +170,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
 
     if (result == true && mounted) {
+      final dbHelper = ref.read(databaseHelperProvider);
       try {
         if (action == 'punch_in') {
-          await ref.read(attendanceProvider.notifier).punchIn(projectId);
+          await ref.read(punchStateProvider.notifier).punchIn(projectId);
+          await dbHelper.insertPunch({
+            'projectId': projectId,
+            'punchInTime': DateTime.now().toIso8601String(),
+          });
           showDialog(
             context: context,
             builder: (context) => AlertDialog(
@@ -189,7 +192,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           );
         } else {
-          await ref.read(attendanceProvider.notifier).punchOut();
+          await ref.read(punchStateProvider.notifier).punchOut();
+          final lastPunch = await dbHelper.getLastOpenPunchForProject(projectId);
+          if (lastPunch != null) {
+            await dbHelper.updatePunch({
+              'id': lastPunch['id'],
+              'punchOutTime': DateTime.now().toIso8601String(),
+            });
+          }
           showDialog(
             context: context,
             builder: (context) => AlertDialog(

@@ -55,6 +55,7 @@ dependencies:
   flutter_secure_storage: ^9.2.4
   collection: ^1.19.1
   hooks_riverpod: ^2.5.1
+  sqflite: ^2.3.3
   
 
 dev_dependencies:
