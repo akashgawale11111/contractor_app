@@ -4,9 +4,8 @@ import 'package:contractor_app/ui_screens/apps_screen/profile_screens/profileScr
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-
 class BottomNavExample extends ConsumerStatefulWidget {
-  const   BottomNavExample({super.key});
+  const BottomNavExample({super.key});
 
   @override
   ConsumerState<BottomNavExample> createState() => _BottomNavExampleState();
@@ -14,31 +13,48 @@ class BottomNavExample extends ConsumerStatefulWidget {
 
 class _BottomNavExampleState extends ConsumerState<BottomNavExample> {
   int _selectedIndex = 0;
-  bool isTab = false;
+
+  final List<String> _titles = ["Home", "Profile"];
 
   @override
   Widget build(BuildContext context) {
-   
-
     final List<Widget> pages = [
-      Center(child: HomeScreen()),
-      Center(child: UserProfileScreen()),
+      const HomeScreen(),
+      const UserProfileScreen(),
     ];
 
     return Scaffold(
-     appBar: AppBar(
-        title: const Text(
-          "Contractor App",
-          style: TextStyle(fontFamily: 'Source Sans 3'),
-        ),
-        centerTitle: true,
+      appBar: AppBar(
+        elevation: 4,
+        backgroundColor: Colors.deepOrange,
         automaticallyImplyLeading: false,
-       
-       
+        centerTitle: true, // ✅ Center the title
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: Image.asset(
+              'assets/icon/menu.png', // your drawer logo
+              height: 28,
+            ),
+            onPressed: () {
+              Scaffold.of(context).openDrawer();
+            },
+          ),
+        ),
+        title: Text(
+          _titles[_selectedIndex],
+          style: const TextStyle(
+            fontFamily: 'Source Sans 3',
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
-      drawer: CustomDrawer(),
+
+      drawer: const CustomDrawer(),
       backgroundColor: Colors.grey.shade300,
       body: pages[_selectedIndex],
+
+      // -------------------- Bottom Navigation --------------------
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ClipRRect(
@@ -78,28 +94,13 @@ class _BottomNavExampleState extends ConsumerState<BottomNavExample> {
         },
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
-          decoration: const BoxDecoration(
-            color: Colors.deepOrange,
-          ),
+          color: Colors.deepOrange,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Stack(
-                alignment: Alignment.topCenter,
-                children: [
-                  if (isSelected)
-                    Positioned(
-                      top: -10,
-                      child: CustomPaint(
-                        size: const Size(20, 10),
-                        // painter: TrianglePainter(),
-                      ),
-                    ),
-                  Icon(
-                    icon,
-                    color: isSelected ? Colors.white : Colors.white70,
-                  ),
-                ],
+              Icon(
+                icon,
+                color: isSelected ? Colors.white : Colors.white70,
               ),
               const SizedBox(height: 4),
               Text(

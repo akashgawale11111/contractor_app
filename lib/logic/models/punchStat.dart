@@ -1,12 +1,12 @@
-class punchStatus {
+class PunchModel {
   bool? status;
   int? statusCode;
   String? message;
   Attendance? attendance;
 
-  punchStatus({this.status, this.statusCode, this.message, this.attendance});
+  PunchModel({this.status, this.statusCode, this.message, this.attendance});
 
-  punchStatus.fromJson(Map<String, dynamic> json) {
+  PunchModel.fromJson(Map<String, dynamic> json) {
     status = json['status'];
     statusCode = json['status_code'];
     message = json['message'];

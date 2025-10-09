@@ -13,7 +13,6 @@ void main() async {
   runApp(const ProviderScope(child: MyApp()));
 }
 
-
 class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
@@ -51,7 +50,7 @@ class MyApp extends ConsumerWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
-      home:  SplashScreen(),
+      home: SplashScreen(),
     );
   }
 }

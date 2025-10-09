@@ -53,45 +53,53 @@ class AuthService {
     }
   }
 
-  static Future<punchStatus> punchIn({
+  /// 🔹 PUNCH IN
+  static Future<PunchModel> punchIn({
     required int labourId,
     required int projectId,
     required String punchInTime,
   }) async {
-    final url = Uri.parse('$baseUrl/attendance');
-    final body = {
-      'labour_id': labourId.toString(),
-      'project_id': projectId.toString(),
-      'punch_in_time': punchInTime,
-    };
+    var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/attendance'));
+    request.fields['labour_id'] = labourId.toString();
+    request.fields['project_id'] = projectId.toString();
+    request.fields['status'] = "punchin";
+    request.fields['punch_in_time'] = punchInTime; // 🔹 custom field (optional)
 
-    final response = await http.post(url, body: body);
+    var response = await request.send();
+    var body = await response.stream.bytesToString();
+    print("➡️ Punch-In Body: ${request.fields}");
+    print("⬅️ Punch-In Response: $body");
 
     if (response.statusCode == 200) {
-      return punchStatus.fromJson(jsonDecode(response.body));
+      return PunchModel.fromJson(jsonDecode(body));
     } else {
-      throw Exception('Failed to punch in: ${response.body}');
+      throw Exception("Punch In Failed");
     }
   }
 
-  static Future<punchStatus> punchOut({
+  /// 🔹 PUNCH OUT
+  static Future<PunchModel> punchOut({
+    required int attendanceId,
+    required String punchOutTime,
     required int labourId,
     required int projectId,
-    required String punchOutTime,
   }) async {
-    final url = Uri.parse('$baseUrl/attendance');
-    final body = {
-      'labour_id': labourId.toString(),
-      'project_id': projectId.toString(),
-      'punch_out_time': punchOutTime,
-    };
+    var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/attendance'));
+    request.fields['status'] = "punchout";
+    request.fields['attendance_id'] = attendanceId.toString();
+    request.fields['punch_out_time'] = punchOutTime; // 🔹 custom field (optional)
+    request.fields['labour_id'] = labourId.toString();
+    request.fields['project_id'] = projectId.toString();
 
-    final response = await http.post(url, body: body);
+    var response = await request.send();
+    var body = await response.stream.bytesToString();
+    print("➡️ Punch-Out Body: ${request.fields}");
+    print("⬅️ Punch-Out Response: $body");
 
     if (response.statusCode == 200) {
-      return punchStatus.fromJson(jsonDecode(response.body));
+      return PunchModel.fromJson(jsonDecode(body));
     } else {
-      throw Exception('Failed to punch out: ${response.body}');
+      throw Exception("Punch Out Failed");
     }
   }
 

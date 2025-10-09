@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:contractor_app/logic/Apis/apis.dart';
+import 'package:contractor_app/logic/Apis/attendance_porvider.dart';
 import 'package:contractor_app/logic/models/project_model.dart';
 import 'package:contractor_app/logic/models/user_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -60,4 +61,42 @@ class AuthNotifier extends StateNotifier<UserModel?> {
     await prefs.remove('isLoggedIn');
     await prefs.remove('user');
   }
+
+
+  /// ---------------------------
+/// 🔹 ATTENDANCE STATE PROVIDER
+/// ---------------------------
+/// Manages Punch In / Punch Out state (from attendance_provider.dart)
+final attendanceStateProvider =
+    StateNotifierProvider<AttendanceNotifier, AttendanceState>(
+  (ref) => AttendanceNotifier(),
+);
+
+/// ---------------------------
+/// 🔹 MANUAL PUNCH IN FUNCTION PROVIDER (optional helper)
+/// ---------------------------
+final punchInProvider = FutureProvider.family<void, Map<String, dynamic>>(
+  (ref, data) async {
+    await AuthService.punchIn(
+      labourId: data['labour_id'],
+      projectId: data['project_id'],
+      punchInTime: data['punch_in_time'],
+    );
+  },
+);
+
+/// ---------------------------
+/// 🔹 MANUAL PUNCH OUT FUNCTION PROVIDER (optional helper)
+/// ---------------------------
+final punchOutProvider = FutureProvider.family<void, Map<String, dynamic>>(
+  (ref, data) async {
+    await AuthService.punchOut(
+      attendanceId: data['attendance_id'],
+      punchOutTime: data['punch_out_time'],
+      labourId: data['labour_id'],
+      projectId: data['project_id'],
+    );
+  },
+);
+
 }
