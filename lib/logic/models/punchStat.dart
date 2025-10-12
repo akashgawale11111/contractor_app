@@ -52,15 +52,15 @@ class Attendance {
       this.status});
 
   Attendance.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    labourId = json['labour_id'];
+    id = int.tryParse(json['id'].toString());
+    labourId = int.tryParse(json['labour_id'].toString());
     checkIn = json['check_in'];
     checkOut = json['check_out'];
     hoursWorked = json['hours_worked'];
     wage = json['wage'];
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
-    projectId = json['project_id'];
+    projectId = int.tryParse(json['project_id'].toString());
     status = json['status'];
   }
 

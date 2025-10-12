@@ -47,9 +47,17 @@ class AttendanceNotifier extends StateNotifier<AttendanceState> {
 
   Future<void> _loadSavedState() async {
     final prefs = await SharedPreferences.getInstance();
+    final projectIdDynamic = prefs.get('projectId');
+    int? projectId;
+    if (projectIdDynamic is String) {
+      projectId = int.tryParse(projectIdDynamic);
+    } else if (projectIdDynamic is int) {
+      projectId = projectIdDynamic;
+    }
+
     state = state.copyWith(
       isPunchedIn: prefs.getBool('isPunchedIn') ?? false,
-      projectId: prefs.getInt('projectId'),
+      projectId: projectId,
       attendanceId: prefs.getInt('attendanceId'),
     );
   }

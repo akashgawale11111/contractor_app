@@ -12,6 +12,9 @@ final projectProvider = FutureProvider<ProjectModel>((ref) async {
 final projectProviderList = FutureProvider<ProjectModel>((ref) async {
   return await AuthService.fetchProjects();
 });
+final projectMapList = FutureProvider<ProjectModel>((ref) async {
+  return await AuthService.fetchProjects();
+});
 final projectProviderID = FutureProvider<ProjectModel>((ref) async {
   return await AuthService.fetchProjects();
 });

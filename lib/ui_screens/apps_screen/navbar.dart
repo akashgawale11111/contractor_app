@@ -33,7 +33,7 @@ class _BottomNavExampleState extends ConsumerState<BottomNavExample> {
           builder: (context) => IconButton(
             icon: Image.asset(
               'assets/icon/menu.png', // your drawer logo
-              height: 28,
+              height: 68,
             ),
             onPressed: () {
               Scaffold.of(context).openDrawer();

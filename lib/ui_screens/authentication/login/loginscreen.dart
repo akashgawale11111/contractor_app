@@ -1,6 +1,7 @@
 import 'package:contractor_app/logic/Apis/provider.dart';
 import 'package:contractor_app/ui_screens/apps_screen/navbar.dart';
 import 'package:contractor_app/utils/custom_Widgets/custom_button.dart';
+import 'package:contractor_app/utils/custom_Widgets/custom_password_field.dart';
 import 'package:contractor_app/utils/custom_Widgets/custom_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,6 +17,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _labourIdController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+   bool _obscureText = true; // default: hide password
 
   void _login() async {
     setState(() => _isLoading = true);
@@ -64,10 +66,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   hintText: 'Labour ID',
                   keyboardType: TextInputType.text,
                 ),
-                CustomTextField(
+                CustomPasswordField(
                   controller: _passwordController,
                   hintText: 'Password',
-                  keyboardType: TextInputType.visiblePassword,
+                  obscureText: _obscureText,
+                  onToggle: () {
+                    setState(() {_obscureText = !_obscureText;});
+                  },
                 ),
                 const SizedBox(height: 20),
                 _isLoading

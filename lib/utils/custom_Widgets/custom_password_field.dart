@@ -4,7 +4,12 @@ class CustomPasswordField extends StatefulWidget {
   final TextEditingController controller;
   final String hintText;
 
-  const CustomPasswordField({super.key, required this.controller, required this.hintText});
+  const CustomPasswordField(
+      {super.key,
+      required this.controller,
+      required this.hintText,
+      required bool obscureText,
+      required Null Function() onToggle});
 
   @override
   State<CustomPasswordField> createState() => _CustomPasswordFieldState();
