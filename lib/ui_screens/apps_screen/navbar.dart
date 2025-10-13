@@ -31,7 +31,7 @@ class _BottomNavExampleState extends ConsumerState<BottomNavExample> {
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {
-              // Handle notification icon press
+            
             },
           ),
         ],
