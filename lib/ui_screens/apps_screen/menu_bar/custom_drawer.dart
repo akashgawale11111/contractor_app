@@ -1,10 +1,11 @@
-import 'package:contractor_app/ui_screens/home/menu_bar/customDrawerScreen/attendance_history.dart';
-import 'package:contractor_app/ui_screens/home/menu_bar/customDrawerScreen/payment_history.dart';
+import 'package:contractor_app/logic/Apis/provider.dart';
+import 'package:contractor_app/ui_screens/apps_screen/menu_bar/customDrawerScreen/attendance_history.dart';
+import 'package:contractor_app/ui_screens/apps_screen/menu_bar/customDrawerScreen/payment_history.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:contractor_app/language/lib/l10n/app_localizations.dart';
 import 'package:contractor_app/language/lib/l10n/language_provider.dart';
-import 'package:contractor_app/ui_screens/home/menu_bar/customDrawerScreen/attendance_calendar.dart';
+import 'package:contractor_app/ui_screens/apps_screen/menu_bar/customDrawerScreen/attendance_calendar.dart';
 import 'package:contractor_app/ui_screens/authentication/login/loginscreen.dart';
 
 class CustomDrawer extends ConsumerWidget {
@@ -76,7 +77,7 @@ class CustomDrawer extends ConsumerWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => const Attendence_History()),
+                    builder: (context) => const AttendanceHistory()),
               );
             },
           ),
@@ -113,7 +114,13 @@ class CustomDrawer extends ConsumerWidget {
             leading: const Icon(Icons.logout),
             title: Text('${loc.logout} >'),
             onTap: () {
-              showLogoutPopup(context);
+             
+              ref.read(authProvider.notifier).logout();
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+              );
+            
             },
           ),
         ],

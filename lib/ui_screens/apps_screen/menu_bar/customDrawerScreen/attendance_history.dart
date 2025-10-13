@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class Attendence_History extends StatelessWidget {
-  const Attendence_History({super.key});
+class AttendanceHistory extends StatelessWidget {
+  const AttendanceHistory({super.key});
 
   // Sample attendance records
   final List<Map<String, String>> attendanceRecords = const [
@@ -86,7 +86,7 @@ class Attendence_History extends StatelessWidget {
                               borderRadius: BorderRadius.circular(10),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.grey.withOpacity(0.3),
+                                  color: Colors.grey.withAlpha(76),
                                   blurRadius: 5,
                                   offset: Offset(0, 3),
                                 ),
