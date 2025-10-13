@@ -72,7 +72,7 @@ class TotalProjects {
       address: json['address'],
       city: json['city'],
       state: json['state'],
-      projectImageUrl: json['project_image_url'],
+      projectImageUrl: json['image_url'],
       latitude: coords != null ? coords[0] : null,
       longitude: coords != null ? coords[1] : null,
     );
