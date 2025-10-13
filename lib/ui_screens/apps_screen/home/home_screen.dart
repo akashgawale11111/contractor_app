@@ -5,6 +5,7 @@ import 'package:collection/collection.dart';
 import 'package:contractor_app/logic/Apis/attendance_porvider.dart';
 import 'package:contractor_app/logic/providers.dart';
 import 'package:contractor_app/logic/Apis/provider.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
@@ -123,8 +124,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
             final sortedProjects = projects.toList();
             sortedProjects.sort((a, b) {
-              if (a.id.toString() == punchState['projectId'].toString()) return -1;
-              if (b.id.toString() == punchState['projectId'].toString()) return 1;
+              if (a.id.toString() == punchState['projectId'].toString())
+                return -1;
+              if (b.id.toString() == punchState['projectId'].toString())
+                return 1;
               return 0;
             });
 
@@ -337,7 +340,7 @@ class _MapScreenWithPunchState extends State<MapScreenWithPunch> {
 
     // ✅ Auto navigate to Face Compare if near project
     if (calculatedDistance < 200) {
-      Future.delayed(const Duration(seconds: 1), () {
+      Future.delayed(const Duration(seconds: 7), () {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -479,13 +482,14 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
         _showErrorDialog("Face does not match.");
       }
     } catch (e) {
-      _showErrorDialog("An error occurred during face comparison: ${e.toString()}");
+      _showErrorDialog(
+          "An error occurred during face comparison: ${e.toString()}");
     } finally {
       setState(() => _isComparing = false);
     }
   }
 
-  Future<void> _handleSuccessfulMatch(int labourId) async {
+     Future<void> _handleSuccessfulMatch(int labourId) async {
     final notifier = ref.read(attendanceProvider.notifier);
     final now = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
 
@@ -493,34 +497,90 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
       if (widget.action == 'punch_in') {
         await notifier.punchIn(labourId, int.parse(widget.projectId));
         ref.read(punchStateProvider.notifier).punchIn(int.parse(widget.projectId));
-        await _showSuccessPopup("Punched In at $now");
+        await _showSuccessPopup(
+          "Punched In Successfully!",
+          action: widget.action,
+          imageFile: _selfieImage,
+          punchTime: now,
+        );
       } else {
         await notifier.punchOut(labourId, int.parse(widget.projectId));
         ref.read(punchStateProvider.notifier).punchOut();
-        await _showSuccessPopup("Punched Out at $now");
+        await _showSuccessPopup(
+          "Punched Out Successfully!",
+          action: widget.action,
+          imageFile: _selfieImage,
+          punchTime: now,
+        );
       }
+
       Navigator.of(context).popUntil((route) => route.isFirst);
     } catch (e) {
       _showErrorDialog("Failed to ${widget.action}: ${e.toString()}");
     }
   }
 
-  // -------------------- UI Helpers --------------------
-  Future<void> _showSuccessPopup(String message) async {
+
+
+    // -------------------- UI Helpers --------------------
+  Future<void> _showSuccessPopup(String message,
+      {required String action,
+      required File? imageFile,
+      required String punchTime}) async {
     await showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text("Success"),
-        content: Text(message),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.green),
+            const SizedBox(width: 8),
+            Text(
+              action == 'punch_in'
+                  ? "Punch In Successful"
+                  : "Punch Out Successful",
+              style: const TextStyle(fontWeight: FontWeight.w500,fontSize: 8),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (imageFile != null)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.file(
+                  imageFile,
+                  height: 120,
+                  width: 120,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            const SizedBox(height: 12),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style:
+                  const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              "Time: $punchTime",
+              style: const TextStyle(fontSize: 15),
+            ),
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text("OK"),
-          )
+            child: const Text("OK",
+                style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
         ],
       ),
     );
   }
+
 
   void _showErrorDialog(String message) {
     showDialog(
@@ -548,8 +608,7 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
     final labour = user.labour!;
     final labourId = int.tryParse(labour.id?.toString() ?? '');
     if (labourId == null) {
-      return const Scaffold(
-          body: Center(child: Text("Invalid user ID")));
+      return const Scaffold(body: Center(child: Text("Invalid user ID")));
     }
 
     return Scaffold(
@@ -577,8 +636,9 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
                   ? const CircularProgressIndicator()
                   : CircleAvatar(
                       radius: 100,
-                      backgroundImage:
-                          _selfieImage != null ? FileImage(_selfieImage!) : null,
+                      backgroundImage: _selfieImage != null
+                          ? FileImage(_selfieImage!)
+                          : null,
                       child: _selfieImage == null
                           ? const Icon(Icons.camera_alt, size: 50)
                           : null,
