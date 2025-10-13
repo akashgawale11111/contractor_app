@@ -26,7 +26,7 @@ class _BottomNavExampleState extends ConsumerState<BottomNavExample> {
     return Scaffold(
       appBar: AppBar(
         elevation: 4,
-        backgroundColor: Colors.deepOrange,
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
@@ -53,14 +53,14 @@ class _BottomNavExampleState extends ConsumerState<BottomNavExample> {
           _titles[_selectedIndex],
           style: const TextStyle(
             fontFamily: 'Source Sans 3',
-            color: Colors.white,
+            color: Color.fromARGB(255, 0, 0, 0),
             fontWeight: FontWeight.bold,
           ),
         ),
       ),
 
       drawer: const CustomDrawer(),
-      backgroundColor: Colors.grey.shade300,
+      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       body: pages[_selectedIndex],
 
       // -------------------- Bottom Navigation --------------------
@@ -70,7 +70,7 @@ class _BottomNavExampleState extends ConsumerState<BottomNavExample> {
           borderRadius: BorderRadius.circular(30),
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.deepOrange,
+              color: const Color.fromARGB(255, 0, 0, 0),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black26,
@@ -103,7 +103,7 @@ class _BottomNavExampleState extends ConsumerState<BottomNavExample> {
         },
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
-          color: Colors.deepOrange,
+          color: const Color(0xFFE85426),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
