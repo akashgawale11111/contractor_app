@@ -28,6 +28,14 @@ class _BottomNavExampleState extends ConsumerState<BottomNavExample> {
         elevation: 4,
         backgroundColor: Colors.deepOrange,
         automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search, color: Colors.white),
+            onPressed: () {
+              // Handle notification icon press
+            },
+          ),
+        ],
         centerTitle: true, // ✅ Center the title
         leading: Builder(
           builder: (context) => IconButton(
