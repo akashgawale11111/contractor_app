@@ -5,6 +5,7 @@ import 'package:collection/collection.dart';
 import 'package:contractor_app/logic/Apis/attendance_porvider.dart';
 import 'package:contractor_app/logic/providers.dart';
 import 'package:contractor_app/logic/Apis/provider.dart';
+import 'package:contractor_app/utils/custom_Widgets/custom_button.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -203,35 +204,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     Row(
                       children: [
                         if (isThisProjectPunchedIn)
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10)),
+                          Expanded(
+                            child: GradientButton(
+                              text: "Punch Out",
+                              onPressed: () => _navigateToMapScreen(
+                                  context, project, 'punch_out'),
+                              colors: const [
+                                Color(0xFFFF4B2B),
+                                Color(0xFFFF416C)
+                              ], // red-pink gradient
                             ),
-                            onPressed: () => _navigateToMapScreen(
-                                context, project, 'punch_out'),
-                            child: const Text("Punch Out",
-                                style: TextStyle(fontSize: 12)),
                           )
                         else if (!punchState['isPunchedIn'])
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green,
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10)),
+                          Expanded(
+                            child: GradientButton(
+                              text: "Punch In",
+                              onPressed: () => _navigateToMapScreen(
+                                  context, project, 'punch_in'),
+                              colors: const [
+                                Color(0xFF00B09B),
+                                Color(0xFF96C93D)
+                              ], // green gradient
                             ),
-                            onPressed: () => _navigateToMapScreen(
-                                context, project, 'punch_in'),
-                            child: const Text("Punch In",
-                                style: TextStyle(fontSize: 12)),
                           )
                         else if (punchState['isPunchedIn'] &&
                             !isThisProjectPunchedIn)
-                          ElevatedButton(
-                            onPressed: null,
-                            child: const Text("Punch In",
-                                style: TextStyle(fontSize: 12)),
+                          Expanded(
+                            child: GradientButton(
+                              text: "Punch In",
+                              onPressed: null, // disabled
+                              colors: const [Colors.grey, Colors.grey],
+                            ),
                           ),
                       ],
                     )
@@ -489,14 +492,16 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
     }
   }
 
-     Future<void> _handleSuccessfulMatch(int labourId) async {
+  Future<void> _handleSuccessfulMatch(int labourId) async {
     final notifier = ref.read(attendanceProvider.notifier);
     final now = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
 
     try {
       if (widget.action == 'punch_in') {
         await notifier.punchIn(labourId, int.parse(widget.projectId));
-        ref.read(punchStateProvider.notifier).punchIn(int.parse(widget.projectId));
+        ref
+            .read(punchStateProvider.notifier)
+            .punchIn(int.parse(widget.projectId));
         await _showSuccessPopup(
           "Punched In Successfully!",
           action: widget.action,
@@ -520,9 +525,7 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
     }
   }
 
-
-
-    // -------------------- UI Helpers --------------------
+  // -------------------- UI Helpers --------------------
   Future<void> _showSuccessPopup(String message,
       {required String action,
       required File? imageFile,
@@ -539,7 +542,7 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
               action == 'punch_in'
                   ? "Punch In Successful"
                   : "Punch Out Successful",
-              style: const TextStyle(fontWeight: FontWeight.w500,fontSize: 8),
+              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 8),
             ),
           ],
         ),
@@ -560,8 +563,7 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
             Text(
               message,
               textAlign: TextAlign.center,
-              style:
-                  const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 10),
             Text(
@@ -573,14 +575,13 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text("OK",
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            child:
+                const Text("OK", style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
     );
   }
-
 
   void _showErrorDialog(String message) {
     showDialog(
