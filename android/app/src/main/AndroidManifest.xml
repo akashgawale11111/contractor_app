@@ -13,9 +13,9 @@
     <uses-permission android:name="android.permission.INTERNET"/>
 
    <application
-        android:label="contractor_app"
+        android:label="Contractor App"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/launcher_icon">
 
         <!-- Add your Google Maps API key here -->
         <meta-data android:name="com.google.android.geo.API_KEY"

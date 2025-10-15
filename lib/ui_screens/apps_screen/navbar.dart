@@ -29,10 +29,11 @@ class _BottomNavExampleState extends ConsumerState<BottomNavExample> {
         backgroundColor: const Color.fromARGB(255, 255, 255, 255),
         actions: [
           IconButton(
-            icon: const Icon(Icons.search,color: Colors.black,),
-            onPressed: () {
-            
-            },
+            icon: const Icon(
+              Icons.search,
+              color: Colors.black,
+            ),
+            onPressed: () {},
           ),
         ],
         automaticallyImplyLeading: false,

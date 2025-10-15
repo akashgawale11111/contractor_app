@@ -3,7 +3,6 @@ import 'package:contractor_app/ui_screens/apps_screen/navbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // ✅ Correct import
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:contractor_app/logic/Apis/provider.dart';
 
 

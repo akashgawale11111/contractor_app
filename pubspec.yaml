@@ -62,15 +62,13 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_launcher_icons: ^0.10.0
+  flutter_launcher_icons: "^0.14.4"
 
-flutter_icons:
-  android: true
+flutter_launcher_icons:
+  android: "launcher_icon"
   ios: true
-  image_path: "assets/images/mmprecise.png"                 # foreground (square)
-  adaptive_icon_background: "assets/images/mmprecise.png"   # optional background
-  adaptive_icon_foreground: "assets/images/mmprecise.png"
-
+  image_path: "assets/images/mmprecise.png"
+  min_sdk_android: 21 # android min sdk min:16, default 21
 
 
 

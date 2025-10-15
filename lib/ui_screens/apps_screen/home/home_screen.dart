@@ -361,8 +361,8 @@ class _MapScreenWithPunchState extends State<MapScreenWithPunch> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.project.name ?? "Project Location"),
-        backgroundColor: Colors.orange,
+        title: Text(widget.project.name ?? "Project Location",style: const TextStyle(color: Colors.black),),
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       ),
       body: _currentPosition == null
           ? const Center(child: CircularProgressIndicator())
