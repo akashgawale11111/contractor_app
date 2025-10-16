@@ -63,7 +63,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 const SizedBox(height: 20),
                 CustomTextField(
                   controller: _labourIdController,
-                  hintText: 'Labour ID',
+                  hintText: 'Staff ID',
                   keyboardType: TextInputType.text,
                 ),
                 CustomPasswordField(

@@ -361,7 +361,11 @@ class _MapScreenWithPunchState extends State<MapScreenWithPunch> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.project.name ?? "Project Location",style: const TextStyle(color: Colors.black),),
+        title: Text(
+          widget.project.name ?? "Project Location",
+          style: const TextStyle(color: Colors.black),
+        ),
+        centerTitle: true,
         backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       ),
       body: _currentPosition == null
@@ -542,7 +546,7 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
               action == 'punch_in'
                   ? "Punch In Successful"
                   : "Punch Out Successful",
-              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 8),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
             ),
           ],
         ),
@@ -573,10 +577,14 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
           ],
         ),
         actions: [
-          TextButton(
+          // TextButton(
+          //   onPressed: () => Navigator.of(context).pop(),
+          //   child:
+          //       const Text("OK", style: TextStyle(fontWeight: FontWeight.bold)),
+          // ),
+          CustomButton(
             onPressed: () => Navigator.of(context).pop(),
-            child:
-                const Text("OK", style: TextStyle(fontWeight: FontWeight.bold)),
+            text: "OK",
           ),
         ],
       ),
@@ -590,9 +598,13 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
         title: const Text("Error"),
         content: Text(message),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("OK"),
+          // TextButton(
+          //   onPressed: () => Navigator.pop(context),
+          //   child: const Text("OK"),
+          // )
+          CustomButton(
+            onPressed: () => Navigator.of(context).pop(),
+            text: "OK",
           )
         ],
       ),
@@ -601,74 +613,116 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
 
   // -------------------- UI --------------------
   @override
-  Widget build(BuildContext context) {
-    final user = ref.watch(authProvider);
-    if (user == null || user.labour == null) {
-      return const Scaffold(body: Center(child: Text("No user data")));
-    }
-    final labour = user.labour!;
-    final labourId = int.tryParse(labour.id?.toString() ?? '');
-    if (labourId == null) {
-      return const Scaffold(body: Center(child: Text("Invalid user ID")));
-    }
+Widget build(BuildContext context) {
+  final user = ref.watch(authProvider);
+  if (user == null || user.labour == null) {
+    return const Scaffold(body: Center(child: Text("No user data")));
+  }
+  final labour = user.labour!;
+  final labourId = int.tryParse(labour.id?.toString() ?? '');
+  if (labourId == null) {
+    return const Scaffold(body: Center(child: Text("Invalid user ID")));
+  }
 
-    return Scaffold(
-      appBar: AppBar(title: const Text("Face Verification")),
-      body: Column(
-        children: [
-          const SizedBox(height: 16),
-          if (_selfieImage == null) ...[
-            const Center(
-              child: Text("Center Your Face",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-              child: Text(
-                "Align your face to the center and take a photo",
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ],
-          const SizedBox(height: 10),
-          Expanded(
-            child: Center(
-              child: _isComparing
-                  ? const CircularProgressIndicator()
-                  : CircleAvatar(
-                      radius: 100,
-                      backgroundImage: _selfieImage != null
-                          ? FileImage(_selfieImage!)
-                          : null,
-                      child: _selfieImage == null
-                          ? const Icon(Icons.camera_alt, size: 50)
-                          : null,
+  return Scaffold(
+    backgroundColor: Colors.white,
+    appBar: AppBar(
+      backgroundColor: Colors.white,
+      elevation: 0,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black),
+        onPressed: () => Navigator.pop(context),
+      ),
+      centerTitle: true,
+      title: const Text(
+        "Location",
+        style: TextStyle(
+          color: Colors.black,
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    ),
+    body: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const SizedBox(height: 20),
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            // Circular mask style similar to screenshot
+            ClipOval(
+              child: _selfieImage != null
+                  ? Image.file(
+                      _selfieImage!,
+                      height: 350,
+                      width: 350,
+                      fit: BoxFit.cover,
+                    )
+                  : Container(
+                      height: 350,
+                      width: 350,
+                      color: Colors.black.withOpacity(0.1),
+                      child: const Icon(Icons.person, size: 80, color: Colors.grey),
                     ),
             ),
+            if (_isComparing)
+              const Positioned.fill(
+                child: Center(child: CircularProgressIndicator()),
+              ),
+          ],
+        ),
+        const SizedBox(height: 40),
+        const Text(
+          "Center Your Face",
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
           ),
-          const SizedBox(height: 10),
-          if (!_isComparing)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                IconButton(icon: const Icon(Icons.flash_on), onPressed: () {}),
-                ElevatedButton(
-                  onPressed: () => _takeSelfieAndCompare(labour.imageUrl!,
-                      labour.firstName! + " " + labour.lastName!, labourId),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                    shape: const CircleBorder(),
-                    padding: const EdgeInsets.all(24),
-                  ),
-                  child: const Icon(Icons.camera_alt, size: 40),
+        ),
+        const SizedBox(height: 6),
+        const Text(
+          "Align You Face To The Center Of The Selfie Area And\nThen Take Photo",
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 13,
+            color: Colors.grey,
+          ),
+        ),
+        const SizedBox(height: 50),
+        if (!_isComparing)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.flash_on, color: Colors.black54),
+                onPressed: () {},
+              ),
+              const SizedBox(width: 30),
+              ElevatedButton(
+                onPressed: () => _takeSelfieAndCompare(
+                    labour.imageUrl!,
+                    "${labour.firstName!} ${labour.lastName!}",
+                    labourId),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  shape: const CircleBorder(),
+                  padding: const EdgeInsets.all(24),
+                  elevation: 5,
                 ),
-                IconButton(
-                    icon: const Icon(Icons.cameraswitch), onPressed: () {}),
-              ],
-            ),
-          const SizedBox(height: 20),
-        ],
-      ),
-    );
-  }
+                child: const Icon(Icons.camera_alt,
+                    size: 36, color: Colors.black87),
+              ),
+              const SizedBox(width: 30),
+              IconButton(
+                icon: const Icon(Icons.cameraswitch, color: Colors.black54),
+                onPressed: () {},
+              ),
+            ],
+          ),
+        const SizedBox(height: 40),
+      ],
+    ),
+  );
+}
 }

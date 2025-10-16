@@ -6,7 +6,7 @@ class AppTheme {
     brightness: Brightness.light,
     scaffoldBackgroundColor: Colors.grey[100],
     appBarTheme: AppBarTheme(
-      backgroundColor: Color(0xFFE85426),
+      backgroundColor: Color.fromARGB(255, 255, 255, 255),
       elevation: 1,
       titleTextStyle: GoogleFonts.poppins(
         color: Colors.white,

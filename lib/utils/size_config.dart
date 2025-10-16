@@ -1,12 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Global responsive size utility.
-///
-/// Usage:
-/// - Call SizeConfig.init(context) once per page (done globally in MaterialApp.builder)
-/// - Use SizeConfig.wp(%) for width-based sizing
-/// - Use SizeConfig.hp(%) for height-based sizing
-/// - Use SizeConfig.sp(px) for font sizes scaled against a 375px base width
 class SizeConfig {
   static late MediaQueryData _mq;
   static late double screenWidth;
