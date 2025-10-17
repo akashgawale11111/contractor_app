@@ -23,7 +23,7 @@ class MyApp extends ConsumerWidget {
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Contractor App',
+      title: 'MMPrecise Attendance',
       locale: locale,
       supportedLocales: const [
         Locale('en'),

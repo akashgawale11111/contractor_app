@@ -13,7 +13,7 @@
     <uses-permission android:name="android.permission.INTERNET"/>
 
    <application
-        android:label="Contractor App"
+        android:label="MMPrecise Attendance"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
 
