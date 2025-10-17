@@ -39,18 +39,18 @@ class _BottomNavExampleState extends ConsumerState<BottomNavExample> {
         automaticallyImplyLeading: false,
         centerTitle: true, // ✅ Center the title
         leading: Builder(
-  builder: (context) => IconButton(
-    icon: const Icon(
-      Icons.menu,
-      size: 28,
-      color: Colors.black, // optional
-    ),
-    onPressed: () {
-      Scaffold.of(context).openDrawer();
-    },
-  ),
-),
-      
+          builder: (context) => IconButton(
+            icon: const Icon(
+              Icons.menu,
+              size: 28,
+              color: Colors.black, // optional
+            ),
+            onPressed: () {
+              Scaffold.of(context).openDrawer();
+            },
+          ),
+        ),
+
         title: Text(
           _titles[_selectedIndex],
           style: const TextStyle(
