@@ -42,7 +42,8 @@ class AuthNotifier extends StateNotifier<UserModel?> {
 
   Future<bool> tryAutoLogin() async {
     final prefs = await SharedPreferences.getInstance();
-    if (!prefs.containsKey('isLoggedIn') || prefs.getBool('isLoggedIn') == false) {
+    if (!prefs.containsKey('isLoggedIn') ||
+        prefs.getBool('isLoggedIn') == false) {
       return false;
     }
 
@@ -65,41 +66,39 @@ class AuthNotifier extends StateNotifier<UserModel?> {
     await prefs.remove('user');
   }
 
+  /// ---------------------------
+  /// 🔹 ATTENDANCE STATE PROVIDER
+  /// ---------------------------
+  /// Manages Punch In / Punch Out state (from attendance_provider.dart)
+  final attendanceStateProvider =
+      StateNotifierProvider<AttendanceNotifier, AttendanceState>(
+    (ref) => AttendanceNotifier(),
+  );
 
   /// ---------------------------
-/// 🔹 ATTENDANCE STATE PROVIDER
-/// ---------------------------
-/// Manages Punch In / Punch Out state (from attendance_provider.dart)
-final attendanceStateProvider =
-    StateNotifierProvider<AttendanceNotifier, AttendanceState>(
-  (ref) => AttendanceNotifier(),
-);
+  /// 🔹 MANUAL PUNCH IN FUNCTION PROVIDER (optional helper)
+  /// ---------------------------
+  final punchInProvider = FutureProvider.family<void, Map<String, dynamic>>(
+    (ref, data) async {
+      await AuthService.punchIn(
+        labourId: data['labour_id'],
+        projectId: data['project_id'],
+        punchInTime: data['punch_in_time'],
+      );
+    },
+  );
 
-/// ---------------------------
-/// 🔹 MANUAL PUNCH IN FUNCTION PROVIDER (optional helper)
-/// ---------------------------
-final punchInProvider = FutureProvider.family<void, Map<String, dynamic>>(
-  (ref, data) async {
-    await AuthService.punchIn(
-      labourId: data['labour_id'],
-      projectId: data['project_id'],
-      punchInTime: data['punch_in_time'],
-    );
-  },
-);
-
-/// ---------------------------
-/// 🔹 MANUAL PUNCH OUT FUNCTION PROVIDER (optional helper)
-/// ---------------------------
-final punchOutProvider = FutureProvider.family<void, Map<String, dynamic>>(
-  (ref, data) async {
-    await AuthService.punchOut(
-      attendanceId: data['attendance_id'],
-      punchOutTime: data['punch_out_time'],
-      labourId: data['labour_id'],
-      projectId: data['project_id'],
-    );
-  },
-);
-
+  /// ---------------------------
+  /// 🔹 MANUAL PUNCH OUT FUNCTION PROVIDER (optional helper)
+  /// ---------------------------
+  final punchOutProvider = FutureProvider.family<void, Map<String, dynamic>>(
+    (ref, data) async {
+      await AuthService.punchOut(
+        attendanceId: data['attendance_id'],
+        punchOutTime: data['punch_out_time'],
+        labourId: data['labour_id'],
+        projectId: data['project_id'],
+      );
+    },
+  );
 }

@@ -15,14 +15,15 @@ class CustomButton extends StatelessWidget {
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: Color(0xFFE85426),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
-        child: Text(text, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        child: Text(text,
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
       ),
     );
   }
 }
-
 
 // -------------------- CUSTOM GRADIENT BUTTON --------------------
 class GradientButton extends StatelessWidget {
@@ -62,7 +63,7 @@ class GradientButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(borderRadius),
           boxShadow: [
             BoxShadow(
-              color: colors.last.withOpacity(0.3),
+              color: colors.last.withAlpha(77),
               blurRadius: 6,
               offset: const Offset(0, 3),
             ),

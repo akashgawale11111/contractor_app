@@ -34,9 +34,7 @@ class AttendanceHistory extends StatelessWidget {
                 Padding(padding: EdgeInsets.all(8.0), child: Text('August')),
               ],
             ),
-
             SizedBox(height: 20),
-
             Expanded(
               child: ListView.builder(
                 itemCount: attendanceRecords.length,

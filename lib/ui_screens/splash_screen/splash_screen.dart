@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart'; // ✅ Correct import
 import 'package:google_fonts/google_fonts.dart';
 import 'package:contractor_app/logic/Apis/provider.dart';
 
-
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
@@ -72,7 +71,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withAlpha(51),
                   shape: BoxShape.circle,
                 ),
                 child: Image.asset('assets/images/mmprecise.png', height: 100),

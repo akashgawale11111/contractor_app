@@ -114,13 +114,11 @@ class CustomDrawer extends ConsumerWidget {
             leading: const Icon(Icons.logout),
             title: Text('${loc.logout} >'),
             onTap: () {
-             
               ref.read(authProvider.notifier).logout();
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (_) => const LoginScreen()),
               );
-            
             },
           ),
         ],
@@ -128,7 +126,6 @@ class CustomDrawer extends ConsumerWidget {
     );
   }
 }
-
 
 void showLogoutPopup(BuildContext context) {
   showDialog(

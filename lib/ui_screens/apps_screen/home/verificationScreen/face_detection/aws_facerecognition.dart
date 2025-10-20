@@ -220,14 +220,16 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
     rekognition = aws.Rekognition(
       region: "ap-south-1",
       credentials: aws.AwsClientCredentials(
-        accessKey: "AKIAQTXFPFMNBGZN7NVV", // ⚠️ Replace with env var or secret manager
+        accessKey:
+            "AKIAQTXFPFMNBGZN7NVV", // ⚠️ Replace with env var or secret manager
         secretKey: "lay+TFsjjZmcG8wOquekqM9u2WcmVICVwmODket7",
       ),
     );
   }
 
   // -------------------- Face Compare + Punch --------------------
-  Future<void> _takeSelfieAndCompare(String labourImageUrl, String name, int labourId, int projectId) async {
+  Future<void> _takeSelfieAndCompare(
+      String labourImageUrl, String name, int labourId, int projectId) async {
     final picked = await ImagePicker().pickImage(source: ImageSource.camera);
     if (picked == null) return;
 
@@ -251,8 +253,9 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
       final match = response.faceMatches?.firstOrNull;
 
       if (match != null && match.similarity != null) {
-        final args =
-            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
+        final args = ModalRoute.of(context)?.settings.arguments
+                as Map<String, dynamic>? ??
+            {};
         final action = args['action'] as String? ?? 'punch_in';
 
         final notifier = ref.read(attendanceProvider.notifier);
@@ -319,7 +322,8 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
     }
     final labour = user.labour!;
     final args =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
+            {};
     final projectId = int.tryParse(args['projectId']?.toString() ?? '0') ?? 0;
     final labourId = int.tryParse(labour.id?.toString() ?? '0') ?? 0;
 
@@ -380,7 +384,8 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
                   ),
                   child: const Icon(Icons.camera, size: 30),
                 ),
-                IconButton(icon: const Icon(Icons.cameraswitch), onPressed: () {}),
+                IconButton(
+                    icon: const Icon(Icons.cameraswitch), onPressed: () {}),
               ],
             ),
           const SizedBox(height: 20),

@@ -7,12 +7,14 @@ final databaseHelperProvider = Provider<DatabaseHelper>((ref) {
   return DatabaseHelper();
 });
 
-final punchStateProvider = StateNotifierProvider<PunchStateNotifier, Map<String, dynamic>>((ref) {
+final punchStateProvider =
+    StateNotifierProvider<PunchStateNotifier, Map<String, dynamic>>((ref) {
   return PunchStateNotifier();
 });
 
 class PunchStateNotifier extends StateNotifier<Map<String, dynamic>> {
-  PunchStateNotifier() : super({'isPunchedIn': false, 'projectId': null, 'punchTime': null}) {
+  PunchStateNotifier()
+      : super({'isPunchedIn': false, 'projectId': null, 'punchTime': null}) {
     _loadState();
   }
 
@@ -21,7 +23,11 @@ class PunchStateNotifier extends StateNotifier<Map<String, dynamic>> {
     final isPunchedIn = prefs.getBool('isPunchedIn') ?? false;
     final projectId = prefs.getInt('projectId');
     final punchTime = prefs.getString('punchTime');
-    state = {'isPunchedIn': isPunchedIn, 'projectId': projectId, 'punchTime': punchTime};
+    state = {
+      'isPunchedIn': isPunchedIn,
+      'projectId': projectId,
+      'punchTime': punchTime
+    };
   }
 
   Future<void> punchIn(int projectId) async {
@@ -30,7 +36,11 @@ class PunchStateNotifier extends StateNotifier<Map<String, dynamic>> {
     await prefs.setBool('isPunchedIn', true);
     await prefs.setInt('projectId', projectId);
     await prefs.setString('punchTime', punchTime);
-    state = {'isPunchedIn': true, 'projectId': projectId, 'punchTime': punchTime};
+    state = {
+      'isPunchedIn': true,
+      'projectId': projectId,
+      'punchTime': punchTime
+    };
   }
 
   Future<void> punchOut() async {

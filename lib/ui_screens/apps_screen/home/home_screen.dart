@@ -284,7 +284,8 @@ class MapScreenWithPunch extends StatefulWidget {
   State<MapScreenWithPunch> createState() => _MapScreenWithPunchState();
 }
 
-class _MapScreenWithPunchState extends State<MapScreenWithPunch> {
+class _MapScreenWithPunchState extends State<MapScreenWithPunch>
+    with WidgetsBindingObserver {
   Position? _currentPosition;
   double? _distance;
   Set<Polyline> _polylines = {};
@@ -293,14 +294,55 @@ class _MapScreenWithPunchState extends State<MapScreenWithPunch> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _projectLatLng =
         LatLng(widget.project.latitude!, widget.project.longitude!);
     _getCurrentLocation();
   }
 
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _getCurrentLocation();
+    }
+  }
+
+  Future<void> _showGPSDisabledDialog() async {
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("GPS is Disabled"),
+          content: const Text("Please turn on GPS to continue."),
+          actions: <Widget>[
+            TextButton(
+              child: const Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pop();
+                Geolocator.openLocationSettings();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _getCurrentLocation() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) return;
+    if (!serviceEnabled) {
+      if (mounted) {
+        _showGPSDisabledDialog();
+      }
+      return;
+    }
 
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied ||
@@ -310,8 +352,7 @@ class _MapScreenWithPunchState extends State<MapScreenWithPunch> {
           permission == LocationPermission.deniedForever) return;
     }
 
-    final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
+    final position = await Geolocator.getCurrentPosition();
 
     final double calculatedDistance = Geolocator.distanceBetween(
       position.latitude,
@@ -320,39 +361,45 @@ class _MapScreenWithPunchState extends State<MapScreenWithPunch> {
       widget.project.longitude!,
     );
 
-    setState(() {
-      _currentPosition = position;
-      _distance = calculatedDistance;
-    });
+    if (mounted) {
+      setState(() {
+        _currentPosition = position;
+        _distance = calculatedDistance;
+      });
+    }
 
     if (calculatedDistance >= 200) {
-      setState(() {
-        _polylines = {
-          Polyline(
-            polylineId: const PolylineId('route'),
-            points: [
-              LatLng(position.latitude, position.longitude),
-              _projectLatLng,
-            ],
-            color: Colors.blue,
-            width: 5,
-          ),
-        };
-      });
+      if (mounted) {
+        setState(() {
+          _polylines = {
+            Polyline(
+              polylineId: const PolylineId('route'),
+              points: [
+                LatLng(position.latitude, position.longitude),
+                _projectLatLng,
+              ],
+              color: Colors.blue,
+              width: 5,
+            ),
+          };
+        });
+      }
     }
 
     // ✅ Auto navigate to Face Compare if near project
     if (calculatedDistance < 200) {
       Future.delayed(const Duration(seconds: 7), () {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => FaceCompareAWS(
-              projectId: widget.project.id!,
-              action: widget.action,
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => FaceCompareAWS(
+                projectId: widget.project.id!,
+                action: widget.action,
+              ),
             ),
-          ),
-        );
+          );
+        }
       });
     }
   }
@@ -386,14 +433,15 @@ class _MapScreenWithPunchState extends State<MapScreenWithPunch> {
                       icon: BitmapDescriptor.defaultMarkerWithHue(
                           BitmapDescriptor.hueRed),
                     ),
-                    Marker(
-                      markerId: const MarkerId('user'),
-                      position: LatLng(_currentPosition!.latitude,
-                          _currentPosition!.longitude),
-                      infoWindow: const InfoWindow(title: 'Your Location'),
-                      icon: BitmapDescriptor.defaultMarkerWithHue(
-                          BitmapDescriptor.hueBlue),
-                    ),
+                    if (_currentPosition != null)
+                      Marker(
+                        markerId: const MarkerId('user'),
+                        position: LatLng(_currentPosition!.latitude,
+                            _currentPosition!.longitude),
+                        infoWindow: const InfoWindow(title: 'Your Location'),
+                        icon: BitmapDescriptor.defaultMarkerWithHue(
+                            BitmapDescriptor.hueBlue),
+                      ),
                   },
                   myLocationEnabled: true,
                   myLocationButtonEnabled: true,
@@ -613,116 +661,115 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
 
   // -------------------- UI --------------------
   @override
-Widget build(BuildContext context) {
-  final user = ref.watch(authProvider);
-  if (user == null || user.labour == null) {
-    return const Scaffold(body: Center(child: Text("No user data")));
-  }
-  final labour = user.labour!;
-  final labourId = int.tryParse(labour.id?.toString() ?? '');
-  if (labourId == null) {
-    return const Scaffold(body: Center(child: Text("Invalid user ID")));
-  }
+  Widget build(BuildContext context) {
+    final user = ref.watch(authProvider);
+    if (user == null || user.labour == null) {
+      return const Scaffold(body: Center(child: Text("No user data")));
+    }
+    final labour = user.labour!;
+    final labourId = int.tryParse(labour.id?.toString() ?? '');
+    if (labourId == null) {
+      return const Scaffold(body: Center(child: Text("Invalid user ID")));
+    }
 
-  return Scaffold(
-    backgroundColor: Colors.white,
-    appBar: AppBar(
+    return Scaffold(
       backgroundColor: Colors.white,
-      elevation: 0,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black),
-        onPressed: () => Navigator.pop(context),
-      ),
-      centerTitle: true,
-      title: const Text(
-        "Location",
-        style: TextStyle(
-          color: Colors.black,
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
         ),
-      ),
-    ),
-    body: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const SizedBox(height: 20),
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            // Circular mask style similar to screenshot
-            ClipOval(
-              child: _selfieImage != null
-                  ? Image.file(
-                      _selfieImage!,
-                      height: 350,
-                      width: 350,
-                      fit: BoxFit.cover,
-                    )
-                  : Container(
-                      height: 350,
-                      width: 350,
-                      color: Colors.black.withOpacity(0.1),
-                      child: const Icon(Icons.person, size: 80, color: Colors.grey),
-                    ),
-            ),
-            if (_isComparing)
-              const Positioned.fill(
-                child: Center(child: CircularProgressIndicator()),
-              ),
-          ],
-        ),
-        const SizedBox(height: 40),
-        const Text(
-          "Center Your Face",
+        centerTitle: true,
+        title: const Text(
+          "Location",
           style: TextStyle(
+            color: Colors.black,
             fontSize: 18,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
           ),
         ),
-        const SizedBox(height: 6),
-        const Text(
-          "Align You Face To The Center Of The Selfie Area And\nThen Take Photo",
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 13,
-            color: Colors.grey,
-          ),
-        ),
-        const SizedBox(height: 50),
-        if (!_isComparing)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+      ),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const SizedBox(height: 20),
+          Stack(
+            alignment: Alignment.center,
             children: [
-              IconButton(
-                icon: const Icon(Icons.flash_on, color: Colors.black54),
-                onPressed: () {},
+              // Circular mask style similar to screenshot
+              ClipOval(
+                child: _selfieImage != null
+                    ? Image.file(
+                        _selfieImage!,
+                        height: 350,
+                        width: 350,
+                        fit: BoxFit.cover,
+                      )
+                    : Container(
+                        height: 350,
+                        width: 350,
+                        color: Colors.black.withAlpha(25),
+                        child: const Icon(Icons.person,
+                            size: 80, color: Colors.grey),
+                      ),
               ),
-              const SizedBox(width: 30),
-              ElevatedButton(
-                onPressed: () => _takeSelfieAndCompare(
-                    labour.imageUrl!,
-                    "${labour.firstName!} ${labour.lastName!}",
-                    labourId),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  shape: const CircleBorder(),
-                  padding: const EdgeInsets.all(24),
-                  elevation: 5,
+              if (_isComparing)
+                const Positioned.fill(
+                  child: Center(child: CircularProgressIndicator()),
                 ),
-                child: const Icon(Icons.camera_alt,
-                    size: 36, color: Colors.black87),
-              ),
-              const SizedBox(width: 30),
-              IconButton(
-                icon: const Icon(Icons.cameraswitch, color: Colors.black54),
-                onPressed: () {},
-              ),
             ],
           ),
-        const SizedBox(height: 40),
-      ],
-    ),
-  );
-}
+          const SizedBox(height: 40),
+          const Text(
+            "Center Your Face",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            "Align You Face To The Center Of The Selfie Area And\nThen Take Photo",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.grey,
+            ),
+          ),
+          const SizedBox(height: 50),
+          if (!_isComparing)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.flash_on, color: Colors.black54),
+                  onPressed: () {},
+                ),
+                const SizedBox(width: 30),
+                ElevatedButton(
+                  onPressed: () => _takeSelfieAndCompare(labour.imageUrl!,
+                      "${labour.firstName!} ${labour.lastName!}", labourId),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    shape: const CircleBorder(),
+                    padding: const EdgeInsets.all(24),
+                    elevation: 5,
+                  ),
+                  child: const Icon(Icons.camera_alt,
+                      size: 36, color: Colors.black87),
+                ),
+                const SizedBox(width: 30),
+                IconButton(
+                  icon: const Icon(Icons.cameraswitch, color: Colors.black54),
+                  onPressed: () {},
+                ),
+              ],
+            ),
+          const SizedBox(height: 40),
+        ],
+      ),
+    );
+  }
 }

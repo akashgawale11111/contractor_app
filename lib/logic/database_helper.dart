@@ -1,4 +1,3 @@
-
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -50,10 +49,12 @@ class DatabaseHelper {
 
   Future<int> updatePunch(Map<String, dynamic> punch) async {
     final db = await database;
-    return await db.update('punches', punch, where: 'id = ?', whereArgs: [punch['id']]);
+    return await db
+        .update('punches', punch, where: 'id = ?', whereArgs: [punch['id']]);
   }
 
-  Future<Map<String, dynamic>?> getLastOpenPunchForProject(String projectId) async {
+  Future<Map<String, dynamic>?> getLastOpenPunchForProject(
+      String projectId) async {
     final db = await database;
     final result = await db.query(
       'punches',

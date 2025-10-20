@@ -9,7 +9,8 @@ class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   static final Map<String, Map<String, String>> _localizedValues = {
     'en': {
@@ -21,7 +22,8 @@ class AppLocalizations {
       'paymentHistory': 'Your Payment History',
       'logout': 'Logout',
       'projectTitle': 'Residential Tower – Masonry Work',
-      'projectAddress': '12, 6th floor, Asha building, Tidake colony, near Real Durvankar lawns, Nashik, Maharashtra - 422009',
+      'projectAddress':
+          '12, 6th floor, Asha building, Tidake colony, near Real Durvankar lawns, Nashik, Maharashtra - 422009',
       'punchIn': 'Punch In',
       'punchOut': 'Punch Out',
       'selectLanguage': 'Select Language',
@@ -41,7 +43,8 @@ class AppLocalizations {
       'paymentHistory': 'आपका भुगतान इतिहास',
       'logout': 'लॉग आउट',
       'projectTitle': 'आवासीय टॉवर - चिनाई का काम',
-      'projectAddress': '12, 6वीं मंजिल, आशा बिल्डिंग, तिड़के कॉलोनी, रियल दुर्वांकर लॉन के पास, नासिक, महाराष्ट्र - 422009',
+      'projectAddress':
+          '12, 6वीं मंजिल, आशा बिल्डिंग, तिड़के कॉलोनी, रियल दुर्वांकर लॉन के पास, नासिक, महाराष्ट्र - 422009',
       'punchIn': 'पंच इन',
       'punchOut': 'पंच आउट',
       'selectLanguage': 'भाषा चुनें',
@@ -61,7 +64,8 @@ class AppLocalizations {
       'paymentHistory': 'तुमचा पेमेंट इतिहास',
       'logout': 'लॉग आउट',
       'projectTitle': 'निवासी टॉवर – गवंडी काम',
-      'projectAddress': '१२, ६ वा मजला, आशा बिल्डिंग, तिडके कॉलनी, रियल दुर्वांकुर लॉन जवळ, नाशिक, महाराष्ट्र - ४२२००९',
+      'projectAddress':
+          '१२, ६ वा मजला, आशा बिल्डिंग, तिडके कॉलनी, रियल दुर्वांकुर लॉन जवळ, नाशिक, महाराष्ट्र - ४२२००९',
       'punchIn': 'पंच इन',
       'punchOut': 'पंच आउट',
       'selectLanguage': 'भाषा निवडा',
@@ -78,27 +82,37 @@ class AppLocalizations {
   String get greeting => _localizedValues[locale.languageCode]!['greeting']!;
   String get home => _localizedValues[locale.languageCode]!['home']!;
   String get profile => _localizedValues[locale.languageCode]!['profile']!;
-  String get changeLanguage => _localizedValues[locale.languageCode]!['changeLanguage']!;
-  String get paymentHistory => _localizedValues[locale.languageCode]!['paymentHistory']!;
+  String get changeLanguage =>
+      _localizedValues[locale.languageCode]!['changeLanguage']!;
+  String get paymentHistory =>
+      _localizedValues[locale.languageCode]!['paymentHistory']!;
   String get logout => _localizedValues[locale.languageCode]!['logout']!;
-  String get projectTitle => _localizedValues[locale.languageCode]!['projectTitle']!;
-  String get projectAddress => _localizedValues[locale.languageCode]!['projectAddress']!;
+  String get projectTitle =>
+      _localizedValues[locale.languageCode]!['projectTitle']!;
+  String get projectAddress =>
+      _localizedValues[locale.languageCode]!['projectAddress']!;
   String get punchIn => _localizedValues[locale.languageCode]!['punchIn']!;
   String get punchOut => _localizedValues[locale.languageCode]!['punchOut']!;
-  String get selectLanguage => _localizedValues[locale.languageCode]!['selectLanguage']!;
+  String get selectLanguage =>
+      _localizedValues[locale.languageCode]!['selectLanguage']!;
   String get cancel => _localizedValues[locale.languageCode]!['cancel']!;
   String get menu => _localizedValues[locale.languageCode]!['menu']!;
-  String get attendanceCalendar => _localizedValues[locale.languageCode]!['attendanceCalendar']!;
-  String get attendanceHistory => _localizedValues[locale.languageCode]!['attendanceHistory']!;
+  String get attendanceCalendar =>
+      _localizedValues[locale.languageCode]!['attendanceCalendar']!;
+  String get attendanceHistory =>
+      _localizedValues[locale.languageCode]!['attendanceHistory']!;
   String get settings => _localizedValues[locale.languageCode]!['settings']!;
-  String get logoutConfirm => _localizedValues[locale.languageCode]!['logoutConfirm']!;
+  String get logoutConfirm =>
+      _localizedValues[locale.languageCode]!['logoutConfirm']!;
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
-  bool isSupported(Locale locale) => ['en', 'hi', 'mr'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      ['en', 'hi', 'mr'].contains(locale.languageCode);
 
   @override
   Future<AppLocalizations> load(Locale locale) async {

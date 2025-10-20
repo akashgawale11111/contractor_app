@@ -59,7 +59,8 @@ class AuthService {
     required int projectId,
     required String punchInTime,
   }) async {
-    var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/attendance'));
+    var request =
+        http.MultipartRequest('POST', Uri.parse('$baseUrl/attendance'));
     request.fields['labour_id'] = labourId.toString();
     request.fields['project_id'] = projectId.toString();
     request.fields['status'] = "punchin";
@@ -84,10 +85,12 @@ class AuthService {
     required int labourId,
     required int projectId,
   }) async {
-    var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/attendance'));
+    var request =
+        http.MultipartRequest('POST', Uri.parse('$baseUrl/attendance'));
     request.fields['status'] = "punchout";
     request.fields['attendance_id'] = attendanceId.toString();
-    request.fields['punch_out_time'] = punchOutTime; // 🔹 custom field (optional)
+    request.fields['punch_out_time'] =
+        punchOutTime; // 🔹 custom field (optional)
     request.fields['labour_id'] = labourId.toString();
     request.fields['project_id'] = projectId.toString();
 
@@ -102,6 +105,4 @@ class AuthService {
       throw Exception("Punch Out Failed");
     }
   }
-
-  
 }

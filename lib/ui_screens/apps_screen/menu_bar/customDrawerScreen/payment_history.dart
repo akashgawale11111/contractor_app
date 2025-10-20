@@ -107,10 +107,9 @@ class _PaymentHistoryState extends State<PaymentHistory> {
                                 },
                                 child: Container(
                                   decoration: BoxDecoration(
-                                    color:
-                                        selectedIndex == 0
-                                            ? Colors.yellow
-                                            : Colors.transparent,
+                                    color: selectedIndex == 0
+                                        ? Colors.yellow
+                                        : Colors.transparent,
                                     borderRadius: BorderRadius.only(
                                       topLeft: Radius.circular(5),
                                       bottomLeft: Radius.circular(5),
@@ -137,10 +136,9 @@ class _PaymentHistoryState extends State<PaymentHistory> {
                                 },
                                 child: Container(
                                   decoration: BoxDecoration(
-                                    color:
-                                        selectedIndex == 1
-                                            ? Colors.yellow
-                                            : Colors.transparent,
+                                    color: selectedIndex == 1
+                                        ? Colors.yellow
+                                        : Colors.transparent,
                                     borderRadius: BorderRadius.only(
                                       topRight: Radius.circular(5),
                                       bottomRight: Radius.circular(5),
