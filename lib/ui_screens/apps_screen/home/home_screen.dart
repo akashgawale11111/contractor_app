@@ -22,12 +22,12 @@ class ProjectModel {
   ProjectModel({this.totalProjects});
 
   factory ProjectModel.fromJson(Map<String, dynamic> json) {
+    final rawList = json['total_projects'] ?? json['projects'] ?? [];
+    final projectsList = (rawList is List)
+        ? rawList.map((v) => TotalProjects.fromJson(v)).toList()
+        : <TotalProjects>[];
     return ProjectModel(
-      totalProjects: json['total_projects'] != null
-          ? (json['total_projects'] as List)
-              .map((v) => TotalProjects.fromJson(v))
-              .toList()
-          : [],
+      totalProjects: projectsList,
     );
   }
 }
