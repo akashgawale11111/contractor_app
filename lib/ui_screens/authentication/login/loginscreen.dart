@@ -1,4 +1,5 @@
 import 'package:contractor_app/logic/Apis/provider.dart';
+import 'package:contractor_app/ui_screens/apps_screen/home/home_screen.dart';
 import 'package:contractor_app/ui_screens/apps_screen/navbar.dart';
 import 'package:contractor_app/utils/custom_Widgets/custom_button.dart';
 import 'package:contractor_app/utils/custom_Widgets/custom_password_field.dart';
@@ -17,25 +18,42 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _labourIdController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
-  bool _obscureText = true; // default: hide password
+  bool _obscureText = true;
 
   void _login() async {
+    if (_labourIdController.text.isEmpty || _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter ID and Password")),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
+
     try {
       await ref
           .read(authProvider.notifier)
           .login(_labourIdController.text, _passwordController.text);
-      // Navigate to profile screen
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => BottomNavExample()),
-      );
+
+      final user = ref.read(authProvider);
+      if (!mounted) return;
+
+      if (user != null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const BottomNavExample()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Invalid login, please try again")),
+        );
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Login failed: $e")),
       );
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 

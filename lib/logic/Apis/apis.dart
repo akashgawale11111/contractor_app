@@ -1,7 +1,7 @@
 // lib/logic/apis/auth_service.dart
 import 'dart:convert';
 import 'package:contractor_app/logic/models/project_model.dart';
-import 'package:contractor_app/logic/models/punchStat.dart';
+import 'package:contractor_app/logic/models/punch_stat.dart';
 import 'package:contractor_app/logic/models/user_model.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
@@ -10,35 +10,63 @@ class AuthService {
   static const String baseUrl = "http://admin.mmprecise.com/api";
   static const storage = FlutterSecureStorage();
 
-  /// Login API
-  static Future<UserModel> login(String labourId, String password) async {
-    var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/login'));
-    request.fields['labour_id'] = labourId;
-    request.fields['password'] = password;
+  /// Handles login for both Labour & Supervisor
+  static Future<UserData> login(String userId, String password) async {
+    print("====================================================");
+    print("🔹 Starting LOGIN request...");
+    print("🔹 Endpoint: $baseUrl/login");
+    print("🔹 Entered user_id/login_id: $userId");
 
-    var response = await request.send();
-    var responseBody = await response.stream.bytesToString();
+    try {
+      var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/login'));
 
-    if (response.statusCode == 200) {
+      // ✅ Send both fields: backend will use the correct one
+      request.fields['user_id'] = userId; // for Labour
+      request.fields['login_id'] = userId; // for Supervisor
+      request.fields['password'] = password;
+
+      print("🕓 Sending request...");
+      final response = await request.send();
+      final responseBody = await response.stream.bytesToString();
+
+      print("✅ Response status: ${response.statusCode}");
+      print("📦 Raw response body: $responseBody");
+
       final data = json.decode(responseBody);
-      // Save token if API gives one (example: data['token'])
+
+      if (response.statusCode != 200) {
+        throw Exception("Failed to login (${response.statusCode})");
+      }
+
+      if (data['status'] == false) {
+        throw Exception(data['message'] ?? "Invalid credentials");
+      }
+
+      // ✅ Store token securely
       if (data['token'] != null) {
         await storage.write(key: 'authToken', value: data['token']);
       }
-      return UserModel.fromJson(data);
-    } else {
-      throw Exception('Failed to login');
+
+      final user = UserData.fromJson(data);
+      print("✅ Parsed UserData successfully");
+      print("👷 Is Labour: ${user.isLabour}");
+      print("🧑‍💼 Is Supervisor: ${user.isSupervisor}");
+      print("====================================================");
+
+      return user;
+    } catch (e, stack) {
+      print("❌ Login failed: $e");
+      print(stack);
+      print("====================================================");
+      throw Exception("Login failed: $e");
     }
   }
 
-  /// Fetch stored token
-  static Future<String?> getToken() async {
-    return await storage.read(key: 'authToken');
-  }
-
-  /// Logout
+  /// Logout user and clear stored token
   static Future<void> logout() async {
+    print("🚪 Logging out and clearing secure storage...");
     await storage.deleteAll();
+    print("✅ Logout complete");
   }
 
   /// Fetch all projects
@@ -68,8 +96,6 @@ class AuthService {
 
     var response = await request.send();
     var body = await response.stream.bytesToString();
-    print("➡️ Punch-In Body: ${request.fields}");
-    print("⬅️ Punch-In Response: $body");
 
     if (response.statusCode == 200) {
       return PunchModel.fromJson(jsonDecode(body));
@@ -96,8 +122,6 @@ class AuthService {
 
     var response = await request.send();
     var body = await response.stream.bytesToString();
-    print("➡️ Punch-Out Body: ${request.fields}");
-    print("⬅️ Punch-Out Response: $body");
 
     if (response.statusCode == 200) {
       return PunchModel.fromJson(jsonDecode(body));

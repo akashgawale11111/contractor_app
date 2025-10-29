@@ -83,8 +83,6 @@ class AttendanceNotifier extends StateNotifier<AttendanceState> {
         projectId: projectId,
         attendanceId: res.attendance?.id,
       );
-
-      print("🕒 Punch-In at $now");
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
@@ -108,7 +106,6 @@ class AttendanceNotifier extends StateNotifier<AttendanceState> {
       await prefs.clear();
 
       state = AttendanceState(isLoading: false);
-      print("🕒 Punch-Out at $now");
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }

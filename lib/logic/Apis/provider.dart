@@ -19,23 +19,25 @@ final projectProviderID = FutureProvider<ProjectModel>((ref) async {
   return await AuthService.fetchProjects();
 });
 
-final authProvider = StateNotifierProvider<AuthNotifier, UserModel?>((ref) {
+final authProvider = StateNotifierProvider<AuthNotifier, UserData?>((ref) {
   return AuthNotifier();
 });
 
-class AuthNotifier extends StateNotifier<UserModel?> {
-  AuthNotifier() : super(null);
+class AuthNotifier extends StateNotifier<UserData?> {
+ AuthNotifier() : super(null);
 
-  Future<void> login(String labourId, String password) async {
+  Future<void> login(String userId, String password) async {
     try {
-      final user = await AuthService.login(labourId, password);
+      final user = await AuthService.login(userId, password);
       state = user;
+
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('isLoggedIn', true);
-      // For security, sensitive user data should be stored in flutter_secure_storage.
-      // For this example, we are using SharedPreferences for simplicity.
       await prefs.setString('user', json.encode(user.toJson()));
+
+      print("✅ Login saved to SharedPreferences");
     } catch (e) {
+      print("❌ Login error: $e");
       rethrow;
     }
   }
@@ -43,29 +45,24 @@ class AuthNotifier extends StateNotifier<UserModel?> {
   Future<bool> tryAutoLogin() async {
     final prefs = await SharedPreferences.getInstance();
     if (!prefs.containsKey('isLoggedIn') ||
-        prefs.getBool('isLoggedIn') == false) {
-      return false;
-    }
+        prefs.getBool('isLoggedIn') == false) return false;
 
-    if (!prefs.containsKey('user')) {
-      return false;
-    }
+    if (!prefs.containsKey('user')) return false;
 
     final extractedUserData =
         json.decode(prefs.getString('user')!) as Map<String, dynamic>;
-    final user = UserModel.fromJson(extractedUserData);
+    final user = UserData.fromJson(extractedUserData);
     state = user;
+    print("✅ Auto-login successful for ${user.userType}");
     return true;
   }
 
   Future<void> logout() async {
-    await AuthService.logout();
-    state = null;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('isLoggedIn');
-    await prefs.remove('user');
+    await prefs.clear();
+    state = null;
+    await AuthService.logout();
   }
-
   /// ---------------------------
   /// 🔹 ATTENDANCE STATE PROVIDER
   /// ---------------------------

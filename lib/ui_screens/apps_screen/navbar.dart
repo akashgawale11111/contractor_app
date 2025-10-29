@@ -1,6 +1,6 @@
 import 'package:contractor_app/ui_screens/apps_screen/home/home_screen.dart';
 import 'package:contractor_app/ui_screens/apps_screen/menu_bar/custom_drawer.dart';
-import 'package:contractor_app/ui_screens/apps_screen/profile_screens/profileScreen.dart';
+import 'package:contractor_app/ui_screens/apps_screen/profile_screens/profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

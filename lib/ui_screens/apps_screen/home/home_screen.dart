@@ -125,10 +125,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
             final sortedProjects = projects.toList();
             sortedProjects.sort((a, b) {
-              if (a.id.toString() == punchState['projectId'].toString())
+              if (a.id.toString() == punchState['projectId'].toString()) {
                 return -1;
-              if (b.id.toString() == punchState['projectId'].toString())
+              }
+              if (b.id.toString() == punchState['projectId'].toString()) {
                 return 1;
+              }
               return 0;
             });
 
@@ -314,6 +316,7 @@ class _MapScreenWithPunchState extends State<MapScreenWithPunch>
   }
 
   Future<void> _showGPSDisabledDialog() async {
+    if (!mounted) return;
     await showDialog(
       context: context,
       barrierDismissible: false,
@@ -349,7 +352,9 @@ class _MapScreenWithPunchState extends State<MapScreenWithPunch>
         permission == LocationPermission.deniedForever) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied ||
-          permission == LocationPermission.deniedForever) return;
+          permission == LocationPermission.deniedForever) {
+        return;
+      }
     }
 
     final position = await Geolocator.getCurrentPosition();
@@ -554,6 +559,7 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
         ref
             .read(punchStateProvider.notifier)
             .punchIn(int.parse(widget.projectId));
+        if (!mounted) return;
         await _showSuccessPopup(
           "Punched In Successfully!",
           action: widget.action,
@@ -563,6 +569,7 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
       } else {
         await notifier.punchOut(labourId, int.parse(widget.projectId));
         ref.read(punchStateProvider.notifier).punchOut();
+        if (!mounted) return;
         await _showSuccessPopup(
           "Punched Out Successfully!",
           action: widget.action,
@@ -571,8 +578,10 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
         );
       }
 
+      if (!mounted) return;
       Navigator.of(context).popUntil((route) => route.isFirst);
     } catch (e) {
+      if (!mounted) return;
       _showErrorDialog("Failed to ${widget.action}: ${e.toString()}");
     }
   }

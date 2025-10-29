@@ -11,17 +11,17 @@ class PunchModel {
     statusCode = json['status_code'];
     message = json['message'];
     attendance = json['attendance'] != null
-        ? new Attendance.fromJson(json['attendance'])
+        ? Attendance.fromJson(json['attendance'])
         : null;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['status'] = this.status;
-    data['status_code'] = this.statusCode;
-    data['message'] = this.message;
-    if (this.attendance != null) {
-      data['attendance'] = this.attendance!.toJson();
+    final Map<String, dynamic> data = {};
+    data['status'] = status;
+    data['status_code'] = statusCode;
+    data['message'] = message;
+    if (attendance != null) {
+      data['attendance'] = attendance!.toJson();
     }
     return data;
   }
@@ -65,17 +65,17 @@ class Attendance {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['labour_id'] = this.labourId;
-    data['check_in'] = this.checkIn;
-    data['check_out'] = this.checkOut;
-    data['hours_worked'] = this.hoursWorked;
-    data['wage'] = this.wage;
-    data['created_at'] = this.createdAt;
-    data['updated_at'] = this.updatedAt;
-    data['project_id'] = this.projectId;
-    data['status'] = this.status;
+    final Map<String, dynamic> data = {};
+    data['id'] = id;
+    data['labour_id'] = labourId;
+    data['check_in'] = checkIn;
+    data['check_out'] = checkOut;
+    data['hours_worked'] = hoursWorked;
+    data['wage'] = wage;
+    data['created_at'] = createdAt;
+    data['updated_at'] = updatedAt;
+    data['project_id'] = projectId;
+    data['status'] = status;
     return data;
   }
 }
