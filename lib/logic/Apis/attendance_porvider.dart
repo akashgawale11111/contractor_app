@@ -14,6 +14,7 @@ class AttendanceState {
   final int? projectId;
   final int? attendanceId;
   final String? error;
+  final bool isSupervisor;
 
   AttendanceState({
     this.isLoading = false,
@@ -21,6 +22,7 @@ class AttendanceState {
     this.projectId,
     this.attendanceId,
     this.error,
+    this.isSupervisor = false,
   });
 
   AttendanceState copyWith({
@@ -29,6 +31,7 @@ class AttendanceState {
     int? projectId,
     int? attendanceId,
     String? error,
+    bool? isSupervisor,
   }) {
     return AttendanceState(
       isLoading: isLoading ?? this.isLoading,
@@ -36,6 +39,7 @@ class AttendanceState {
       projectId: projectId ?? this.projectId,
       attendanceId: attendanceId ?? this.attendanceId,
       error: error ?? this.error,
+      isSupervisor: isSupervisor ?? this.isSupervisor,
     );
   }
 }
@@ -59,36 +63,53 @@ class AttendanceNotifier extends StateNotifier<AttendanceState> {
       isPunchedIn: prefs.getBool('isPunchedIn') ?? false,
       projectId: projectId,
       attendanceId: prefs.getInt('attendanceId'),
+      isSupervisor: prefs.getBool('isSupervisor') ?? false,
     );
   }
 
-  Future<void> punchIn(int labourId, int projectId) async {
+  Future<void> punchIn({
+    int? labourId,
+    int? supervisorId,
+    required int projectId,
+    required bool isSupervisor,
+  }) async {
     try {
       state = state.copyWith(isLoading: true);
       final now = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
       final res = await AuthService.punchIn(
         labourId: labourId,
+        supervisorId: supervisorId,
         projectId: projectId,
         punchInTime: now,
+        isSupervisor: isSupervisor,
       );
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('isPunchedIn', true);
       await prefs.setInt('projectId', projectId);
-      await prefs.setInt('attendanceId', res.attendance?.id ?? 0);
+      if (res.attendance.id != null) {
+        await prefs.setInt('attendanceId', res.attendance.id!);
+      }
+      await prefs.setBool('isSupervisor', isSupervisor);
 
       state = state.copyWith(
         isLoading: false,
         isPunchedIn: true,
         projectId: projectId,
-        attendanceId: res.attendance?.id,
+  attendanceId: res.attendance.id,
+        isSupervisor: isSupervisor,
       );
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
-  Future<void> punchOut(int labourId, int projectId) async {
+  Future<void> punchOut({
+    int? labourId,
+    int? supervisorId,
+    required int projectId,
+    required bool isSupervisor,
+  }) async {
     try {
       state = state.copyWith(isLoading: true);
       final prefs = await SharedPreferences.getInstance();
@@ -100,10 +121,16 @@ class AttendanceNotifier extends StateNotifier<AttendanceState> {
         attendanceId: attendanceId,
         punchOutTime: now,
         labourId: labourId,
+        supervisorId: supervisorId,
         projectId: projectId,
+        isSupervisor: isSupervisor,
       );
 
-      await prefs.clear();
+      // Remove only attendance-related keys to avoid clearing other stored data
+      await prefs.remove('isPunchedIn');
+      await prefs.remove('projectId');
+      await prefs.remove('attendanceId');
+      await prefs.remove('isSupervisor');
 
       state = AttendanceState(isLoading: false);
     } catch (e) {

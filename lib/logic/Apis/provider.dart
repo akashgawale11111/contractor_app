@@ -77,10 +77,14 @@ class AuthNotifier extends StateNotifier<UserData?> {
   /// ---------------------------
   final punchInProvider = FutureProvider.family<void, Map<String, dynamic>>(
     (ref, data) async {
+      final bool isSupervisor = (data['supervisor_id'] != null) ||
+          (data['is_supervisor'] == true) || (data['isSupervisor'] == true);
       await AuthService.punchIn(
         labourId: data['labour_id'],
+        supervisorId: data['supervisor_id'],
         projectId: data['project_id'],
         punchInTime: data['punch_in_time'],
+        isSupervisor: isSupervisor,
       );
     },
   );
@@ -90,11 +94,15 @@ class AuthNotifier extends StateNotifier<UserData?> {
   /// ---------------------------
   final punchOutProvider = FutureProvider.family<void, Map<String, dynamic>>(
     (ref, data) async {
+      final bool isSupervisor = (data['supervisor_id'] != null) ||
+          (data['is_supervisor'] == true) || (data['isSupervisor'] == true);
       await AuthService.punchOut(
         attendanceId: data['attendance_id'],
         punchOutTime: data['punch_out_time'],
         labourId: data['labour_id'],
+        supervisorId: data['supervisor_id'],
         projectId: data['project_id'],
+        isSupervisor: isSupervisor,
       );
     },
   );

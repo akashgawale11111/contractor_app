@@ -83,13 +83,22 @@ class AuthService {
 
   /// 🔹 PUNCH IN
   static Future<PunchModel> punchIn({
-    required int labourId,
+    int? labourId,
+    int? supervisorId,
     required int projectId,
     required String punchInTime,
+    required bool isSupervisor,
   }) async {
     var request =
         http.MultipartRequest('POST', Uri.parse('$baseUrl/attendance'));
-    request.fields['labour_id'] = labourId.toString();
+    
+    // Add appropriate ID based on user type
+    if (isSupervisor) {
+      request.fields['supervisor_id'] = supervisorId.toString();
+    } else {
+      request.fields['labour_id'] = labourId.toString();
+    }
+    
     request.fields['project_id'] = projectId.toString();
     request.fields['status'] = "punchin";
     request.fields['punch_in_time'] = punchInTime; // 🔹 custom field (optional)
@@ -108,8 +117,10 @@ class AuthService {
   static Future<PunchModel> punchOut({
     required int attendanceId,
     required String punchOutTime,
-    required int labourId,
+    int? labourId,
+    int? supervisorId,
     required int projectId,
+    required bool isSupervisor,
   }) async {
     var request =
         http.MultipartRequest('POST', Uri.parse('$baseUrl/attendance'));
@@ -117,7 +128,14 @@ class AuthService {
     request.fields['attendance_id'] = attendanceId.toString();
     request.fields['punch_out_time'] =
         punchOutTime; // 🔹 custom field (optional)
-    request.fields['labour_id'] = labourId.toString();
+    
+    // Add appropriate ID based on user type
+    if (isSupervisor) {
+      request.fields['supervisor_id'] = supervisorId.toString();
+    } else {
+      request.fields['labour_id'] = labourId.toString();
+    }
+    
     request.fields['project_id'] = projectId.toString();
 
     var response = await request.send();

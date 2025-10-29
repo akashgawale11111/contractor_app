@@ -512,7 +512,8 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
 
   // -------------------- Face Compare + Punch --------------------
   Future<void> _takeSelfieAndCompare(
-      String labourImageUrl, String name, int labourId) async {
+    String userImageUrl, String name, int userId,
+    {required bool isSupervisor}) async {
     final picked = await ImagePicker().pickImage(source: ImageSource.camera);
     if (picked == null) return;
 
@@ -521,7 +522,7 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
 
     try {
       final selfieBytes = await _selfieImage!.readAsBytes();
-      final networkImage = await http.get(Uri.parse(labourImageUrl));
+  final networkImage = await http.get(Uri.parse(userImageUrl));
 
       if (networkImage.statusCode != 200) {
         _showErrorDialog("Failed to load labour image.");
@@ -537,7 +538,7 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
       final match = response.faceMatches?.firstOrNull;
 
       if (match != null && match.similarity != null) {
-        await _handleSuccessfulMatch(labourId);
+        await _handleSuccessfulMatch(userId, isSupervisor);
       } else {
         _showErrorDialog("Face does not match.");
       }
@@ -549,16 +550,19 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
     }
   }
 
-  Future<void> _handleSuccessfulMatch(int labourId) async {
+  Future<void> _handleSuccessfulMatch(int userId, bool isSupervisor) async {
     final notifier = ref.read(attendanceProvider.notifier);
     final now = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
 
     try {
       if (widget.action == 'punch_in') {
-        await notifier.punchIn(labourId, int.parse(widget.projectId));
-        ref
-            .read(punchStateProvider.notifier)
-            .punchIn(int.parse(widget.projectId));
+        await notifier.punchIn(
+          labourId: isSupervisor ? null : userId,
+          supervisorId: isSupervisor ? userId : null,
+          projectId: int.parse(widget.projectId),
+          isSupervisor: isSupervisor,
+        );
+        ref.read(punchStateProvider.notifier).punchIn(int.parse(widget.projectId));
         if (!mounted) return;
         await _showSuccessPopup(
           "Punched In Successfully!",
@@ -567,7 +571,12 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
           punchTime: now,
         );
       } else {
-        await notifier.punchOut(labourId, int.parse(widget.projectId));
+        await notifier.punchOut(
+          labourId: isSupervisor ? null : userId,
+          supervisorId: isSupervisor ? userId : null,
+          projectId: int.parse(widget.projectId),
+          isSupervisor: isSupervisor,
+        );
         ref.read(punchStateProvider.notifier).punchOut();
         if (!mounted) return;
         await _showSuccessPopup(
@@ -672,12 +681,21 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(authProvider);
-    if (user == null || user.labour == null) {
+    if (user == null) {
       return const Scaffold(body: Center(child: Text("No user data")));
     }
-    final labour = user.labour!;
-    final labourId = int.tryParse(labour.id?.toString() ?? '');
-    if (labourId == null) {
+
+    // Support both Labour and Supervisor users
+    int? labourId;
+    int? supervisorId;
+    if (user.isLabour && user.labour != null) {
+      labourId = user.labour!.id;
+    }
+    if (user.isSupervisor && user.supervisor != null) {
+      supervisorId = user.supervisor!.id;
+    }
+
+    if (labourId == null && supervisorId == null) {
       return const Scaffold(body: Center(child: Text("Invalid user ID")));
     }
 
@@ -758,8 +776,17 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
                 ),
                 const SizedBox(width: 30),
                 ElevatedButton(
-                  onPressed: () => _takeSelfieAndCompare(labour.imageUrl!,
-                      "${labour.firstName!} ${labour.lastName!}", labourId),
+                  onPressed: () {
+                    final imageUrl = labourId != null
+                        ? (user.labour?.imageUrl ?? '')
+                        : (user.supervisor?.imageUrl ?? '');
+                    final displayName = labourId != null
+                        ? "${user.labour?.firstName ?? ''} ${user.labour?.lastName ?? ''}"
+                        : (user.supervisor?.supervisorName ?? 'Supervisor');
+                    final userIdToUse = (labourId ?? supervisorId)!;
+                    _takeSelfieAndCompare(imageUrl, displayName, userIdToUse,
+                        isSupervisor: supervisorId != null);
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
                     shape: const CircleBorder(),
