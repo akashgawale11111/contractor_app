@@ -5,6 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class UserProfileScreen extends ConsumerWidget {
   const UserProfileScreen({super.key});
 
+  // 🟢 Change this to your correct image folder on the server.
+  static const String baseImageUrl = "http://admin.mmprecise.com/uploads/";
+
   Widget infoRow(IconData icon, String title, String? value) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 6),
@@ -51,7 +54,6 @@ class UserProfileScreen extends ConsumerWidget {
       );
     }
 
-    // Determine if the user is Labour or Supervisor
     final isLabour = user.isLabour;
     final isSupervisor = user.isSupervisor;
 
@@ -59,21 +61,30 @@ class UserProfileScreen extends ConsumerWidget {
     String displayName = 'User';
     List<Widget> infoRows = [];
 
+    // 🧩 Labour Section
     if (isLabour && user.labour != null) {
       final labour = user.labour!;
       avatarUrl = labour.imageUrl;
+      if (avatarUrl != null && !avatarUrl.startsWith("http")) {
+        avatarUrl = baseImageUrl + avatarUrl;
+      }
       displayName = "${labour.firstName ?? ''} ${labour.lastName ?? ''}";
       infoRows = [
         infoRow(Icons.badge, "Labour ID", labour.labourId),
         infoRow(Icons.email, "Email", labour.email),
       ];
-    } else if (isSupervisor && user.supervisor != null) {
+    }
+    // 🧩 Supervisor Section
+    else if (isSupervisor && user.supervisor != null) {
       final supervisor = user.supervisor!;
-      avatarUrl = supervisor.photo;
+      avatarUrl = supervisor.imageUrl ?? supervisor.imageUrl;
+      if (avatarUrl != null && !avatarUrl.startsWith("http")) {
+        avatarUrl = baseImageUrl + avatarUrl;
+      }
       displayName = supervisor.supervisorName ?? 'Supervisor';
       infoRows = [
         infoRow(Icons.badge, "Login ID", supervisor.loginId),
-        infoRow(Icons.email, "Email", null), // Add email if available
+        infoRow(Icons.email, "Email", null),
       ];
     }
 
@@ -102,13 +113,41 @@ class UserProfileScreen extends ConsumerWidget {
                   child: CircleAvatar(
                     radius: 55,
                     backgroundColor: Colors.white,
-                    backgroundImage: avatarUrl != null
-                        ? NetworkImage(avatarUrl)
-                        : null,
-                    child: avatarUrl == null
-                        ? const Icon(Icons.person,
-                            size: 60, color: Colors.blueAccent)
-                        : null,
+                    child: avatarUrl != null
+                        ? ClipOval(
+                            child: Image.network(
+                              avatarUrl,
+                              width: 110,
+                              height: 110,
+                              fit: BoxFit.cover,
+                              loadingBuilder:
+                                  (context, child, loadingProgress) {
+                                if (loadingProgress == null) {
+                                  debugPrint(
+                                      "✅ Image loaded successfully: $avatarUrl");
+                                  return child;
+                                }
+                                return const CircularProgressIndicator(
+                                  color: Colors.blueAccent,
+                                );
+                              },
+                              errorBuilder:
+                                  (context, error, stackTrace) {
+                                debugPrint("❌ Image load failed: $error");
+                                debugPrint("📂 Image URL: $avatarUrl");
+                                return const Icon(
+                                  Icons.person,
+                                  size: 60,
+                                  color: Colors.blueAccent,
+                                );
+                              },
+                            ),
+                          )
+                        : const Icon(
+                            Icons.person,
+                            size: 60,
+                            color: Colors.blueAccent,
+                          ),
                   ),
                 ),
               ),
@@ -134,13 +173,11 @@ class UserProfileScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  // Show role info
                   Text(
                     "Role: ${user.userType ?? (isLabour ? 'Labour' : 'Supervisor')}",
                     style: const TextStyle(
                         fontSize: 16, fontWeight: FontWeight.w500),
                   ),
-                  const SizedBox(height: 12),
                 ],
               ),
             ),

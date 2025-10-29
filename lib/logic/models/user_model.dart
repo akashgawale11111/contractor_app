@@ -96,13 +96,13 @@ class Supervisor {
   int? id;
   String? supervisorName;
   String? loginId;
-  String? photo;
+  String? imageUrl;
 
   Supervisor({
     this.id,
     this.supervisorName,
     this.loginId,
-    this.photo,
+    this.imageUrl,
   });
 
   factory Supervisor.fromJson(Map<String, dynamic> json) {
@@ -110,7 +110,7 @@ class Supervisor {
       id: json['id'],
       supervisorName: json['supervisor_name'],
       loginId: json['login_id'],
-      photo: json['photo'],
+      imageUrl: json['image_url'],
     );
   }
 
@@ -118,6 +118,6 @@ class Supervisor {
         'id': id,
         'supervisor_name': supervisorName,
         'login_id': loginId,
-        'photo': photo,
+        'image_url': imageUrl,
       };
 }
