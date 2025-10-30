@@ -393,7 +393,7 @@ class _MapScreenWithPunchState extends State<MapScreenWithPunch>
 
     // ✅ Auto navigate to Face Compare if near project
     if (calculatedDistance < 200) {
-      Future.delayed(const Duration(seconds: 7), () {
+      Future.delayed(const Duration(seconds: 5), () {
         if (mounted) {
           Navigator.pushReplacement(
             context,

@@ -5,6 +5,81 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class UserProfileScreen extends ConsumerWidget {
   const UserProfileScreen({super.key});
 
+  void _showImageDialog(BuildContext context, String imageUrl) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        insetPadding: const EdgeInsets.all(12),
+        backgroundColor: Colors.transparent,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final maxHeight = MediaQuery.of(context).size.height * 0.9;
+            final maxWidth = MediaQuery.of(context).size.width * 0.95;
+            return ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: maxHeight, maxWidth: maxWidth),
+              child: Stack(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: const EdgeInsets.all(8),
+                    child: InteractiveViewer(
+                      minScale: 0.5,
+                      maxScale: 4.0,
+                      child: Image.network(
+                        imageUrl,
+                        fit: BoxFit.contain,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return const SizedBox(
+                            height: 120,
+                            width: 120,
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                              ),
+                            ),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return const SizedBox(
+                            height: 180,
+                            child: Center(
+                              child: Icon(
+                                Icons.broken_image,
+                                color: Colors.white,
+                                size: 56,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 6,
+                    right: 6,
+                    child: ClipOval(
+                      child: Material(
+                        color: Colors.black45,
+                        child: IconButton(
+                          icon: const Icon(Icons.close, color: Colors.white),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
   // 🟢 Change this to your correct image folder on the server.
   static const String baseImageUrl = "http://admin.mmprecise.com/uploads/";
 
@@ -114,33 +189,36 @@ class UserProfileScreen extends ConsumerWidget {
                     radius: 55,
                     backgroundColor: Colors.white,
                     child: avatarUrl != null
-                        ? ClipOval(
-                            child: Image.network(
-                              avatarUrl,
-                              width: 110,
-                              height: 110,
-                              fit: BoxFit.cover,
-                              loadingBuilder:
-                                  (context, child, loadingProgress) {
-                                if (loadingProgress == null) {
-                                  debugPrint(
-                                      "✅ Image loaded successfully: $avatarUrl");
-                                  return child;
-                                }
-                                return const CircularProgressIndicator(
-                                  color: Colors.blueAccent,
-                                );
-                              },
-                              errorBuilder:
-                                  (context, error, stackTrace) {
-                                debugPrint("❌ Image load failed: $error");
-                                debugPrint("📂 Image URL: $avatarUrl");
-                                return const Icon(
-                                  Icons.person,
-                                  size: 60,
-                                  color: Colors.blueAccent,
-                                );
-                              },
+                        ? GestureDetector(
+                            onTap: () => _showImageDialog(context, avatarUrl!),
+                            child: ClipOval(
+                              child: Image.network(
+                                avatarUrl,
+                                width: 110,
+                                height: 110,
+                                fit: BoxFit.cover,
+                                loadingBuilder:
+                                    (context, child, loadingProgress) {
+                                  if (loadingProgress == null) {
+                                    debugPrint(
+                                        "✅ Image loaded successfully: $avatarUrl");
+                                    return child;
+                                  }
+                                  return const CircularProgressIndicator(
+                                    color: Colors.blueAccent,
+                                  );
+                                },
+                                errorBuilder:
+                                    (context, error, stackTrace) {
+                                  debugPrint("❌ Image load failed: $error");
+                                  debugPrint("📂 Image URL: $avatarUrl");
+                                  return const Icon(
+                                    Icons.person,
+                                    size: 60,
+                                    color: Colors.blueAccent,
+                                  );
+                                },
+                              ),
                             ),
                           )
                         : const Icon(
