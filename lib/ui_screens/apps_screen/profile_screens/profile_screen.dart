@@ -17,7 +17,7 @@ class UserProfileScreen extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         child: Row(
           children: [
-            Icon(icon, color: Colors.blueAccent),
+            Icon(icon, color: const Color.fromARGB(255, 144, 221, 106)),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -31,7 +31,7 @@ class UserProfileScreen extends ConsumerWidget {
                   const SizedBox(height: 2),
                   Text(value ?? "N/A",
                       style: const TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.w600)),
+                          fontSize: 15, fontWeight: FontWeight.w500)),
                 ],
               ),
             ),
@@ -49,7 +49,7 @@ class UserProfileScreen extends ConsumerWidget {
       return const Scaffold(
         body: Center(
           child: Text("No user data",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
         ),
       );
     }
@@ -99,12 +99,12 @@ class UserProfileScreen extends ConsumerWidget {
               title: Text(
                 displayName,
                 style: const TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.bold),
+                    color: Colors.white, fontWeight: FontWeight.w500,fontSize: 16),
               ),
               background: Container(
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Colors.blueAccent, Colors.lightBlue],
+                    colors: [Color.fromARGB(255, 221, 56, 233), Color.fromARGB(255, 156, 113, 255)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -176,7 +176,7 @@ class UserProfileScreen extends ConsumerWidget {
                   Text(
                     "Role: ${user.userType ?? (isLabour ? 'Labour' : 'Supervisor')}",
                     style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.w500),
+                        fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
