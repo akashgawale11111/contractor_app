@@ -5,7 +5,22 @@ import 'package:contractor_app/logic/Apis/provider.dart';
 import 'package:contractor_app/logic/models/attendance_history_model.dart' as ahm;
 // shared_prefs accessed via `userInfoProvider` in provider.dart
 
-class AttendanceHistory extends ConsumerWidget {
+// Small in-file model representing a single punch event (in or out).
+class _PunchEvent {
+  final DateTime datetime;
+  final String label;
+  final String formatted;
+  final String projectName;
+
+  _PunchEvent({
+    required this.datetime,
+    required this.label,
+    required this.formatted,
+    required this.projectName,
+  });
+}
+
+class AttendanceHistory extends ConsumerStatefulWidget {
   const AttendanceHistory({super.key});
 
   String _formatDateTime(String? dateTimeStr) {
@@ -29,9 +44,29 @@ class AttendanceHistory extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Prefer the in-memory authProvider as the primary source of the current user.
-    final user = ref.watch(authProvider);
+  ConsumerState<AttendanceHistory> createState() => _AttendanceHistoryState();
+}
+
+class _AttendanceHistoryState extends ConsumerState<AttendanceHistory> {
+  // Track last refresh per userId to avoid infinite refresh loops when the
+  // widget is built and visible. We refresh only if the previous refresh was
+  // more than 2 seconds ago.
+  final Map<String, DateTime> _lastRefreshAt = {};
+
+  void _maybeRefreshForUser(String userId) {
+    final last = _lastRefreshAt[userId];
+    final now = DateTime.now();
+    if (last == null || now.difference(last) > const Duration(seconds: 2)) {
+      _lastRefreshAt[userId] = now;
+      // Invalidate the provider so the next watch will re-fetch live data.
+      ref.invalidate(attendanceHistoryProvider(userId));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+  // Prefer the in-memory authProvider as the primary source of the current user.
+  final user = ref.watch(authProvider);
 
     // If authProvider isn't available yet, fallback to SharedPrefs-backed userInfoProvider.
     final fallbackAsync = ref.watch(userInfoProvider);
@@ -72,6 +107,15 @@ class AttendanceHistory extends ConsumerWidget {
             ),
           );
         }
+
+        // Attempt an automatic refresh when this route is current (visible).
+        // Use a post-frame callback so we can safely check route visibility.
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          final route = ModalRoute.of(context);
+          if (route != null && route.isCurrent) {
+            _maybeRefreshForUser(userId);
+          }
+        });
 
         print('🔹 Fetching attendance with userType: $userType, userId: $userId');
         final attendanceHistoryAsync = ref.watch(attendanceHistoryProvider(userId));
@@ -142,35 +186,78 @@ class AttendanceHistory extends ConsumerWidget {
           .toList(growable: false);
                 print('✅ attendance records count: ${records.length}');
                 if (records.isNotEmpty) print('✅ first record: ${records[0].toJson()}');
-                // Simple list view: show project, punch in/out and date
-                return ListView.separated(
-                  itemCount: records.length,
-                  separatorBuilder: (context, index) => const Divider(height: 1),
-                  itemBuilder: (context, index) {
-                    final ahm.AttendanceHistory record = records[index];
 
-                    // Use punchIn.date or record.date to build a friendly day/month
-                    String day = '';
-                    String month = '';
+                // Build a flattened list of events so we can show every punch in *and* punch out
+                // as separate timeline entries. This ensures all times from the API are visible.
+                final List<_PunchEvent> events = [];
+                for (final r in records) {
+                  final project = r.projectName ?? r.userName ?? 'Attendance';
+                  if (r.punchIn != null) {
                     try {
-                      final d = DateTime.parse(record.date ?? record.punchIn?.date ?? '');
-                      day = d.day.toString();
-                      month = DateFormat('MMM').format(d);
+                      final dt = DateTime.parse(r.punchIn!.datetime ?? r.punchIn!.date ?? '');
+                      events.add(_PunchEvent(
+                        datetime: dt,
+                        label: 'Punch In',
+                        formatted: r.punchIn!.formatted ?? r.punchIn!.time ?? r.punchIn!.datetime ?? '',
+                        projectName: project,
+                      ));
                     } catch (e) {
-                      // fallback to formatted punchIn if available
-                      final formatted = record.punchIn?.formatted ?? record.date ?? '';
-                      final parts = formatted.split(',');
-                      if (parts.isNotEmpty) {
-                        final tokens = parts[0].split(' ');
-                        if (tokens.length >= 2) {
-                          day = tokens.last;
-                          month = tokens[0];
-                        }
-                      }
+                      // ignore parse errors; still add with epoch so it doesn't crash
+                      events.add(_PunchEvent(
+                        datetime: DateTime.fromMillisecondsSinceEpoch(0),
+                        label: 'Punch In',
+                        formatted: r.punchIn!.formatted ?? r.punchIn!.time ?? r.punchIn!.datetime ?? '',
+                        projectName: project,
+                      ));
                     }
+                  }
+                  if (r.punchOut != null) {
+                    try {
+                      final dt = DateTime.parse(r.punchOut!.datetime ?? r.punchOut!.date ?? '');
+                      events.add(_PunchEvent(
+                        datetime: dt,
+                        label: 'Punch Out',
+                        formatted: r.punchOut!.formatted ?? r.punchOut!.time ?? r.punchOut!.datetime ?? '',
+                        projectName: project,
+                      ));
+                    } catch (e) {
+                      events.add(_PunchEvent(
+                        datetime: DateTime.fromMillisecondsSinceEpoch(0),
+                        label: 'Punch Out',
+                        formatted: r.punchOut!.formatted ?? r.punchOut!.time ?? r.punchOut!.datetime ?? '',
+                        projectName: project,
+                      ));
+                    }
+                  }
+                }
 
-                    final punchIn = record.punchIn?.formatted ?? record.punchIn?.datetime ?? '—';
-                    final punchOut = record.punchOut?.formatted ?? record.punchOut?.datetime ?? '—';
+                // Sort events newest first
+                events.sort((a, b) => b.datetime.compareTo(a.datetime));
+
+                if (events.isEmpty) {
+                  return const Center(child: Text('No attendance events available'));
+                }
+
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    // Force refresh: invalidate and then await the new future so the
+                    // RefreshIndicator shows until data is fetched.
+                    ref.invalidate(attendanceHistoryProvider(userId));
+                    try {
+                      await ref.read(attendanceHistoryProvider(userId).future);
+                    } catch (_) {
+                      // ignore errors here; the UI will display the error state
+                    }
+                  },
+                  child: ListView.separated(
+                    itemCount: events.length,
+                    separatorBuilder: (context, index) => const Divider(height: 1),
+                    itemBuilder: (context, index) {
+                    final ev = events[index];
+                    final displayDate = DateFormat('dd MMM yyyy').format(ev.datetime);
+                    final displayTime = ev.formatted.isNotEmpty
+                        ? ev.formatted
+                        : DateFormat('hh:mm a').format(ev.datetime);
 
                     return ListTile(
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -185,18 +272,18 @@ class AttendanceHistory extends ConsumerWidget {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text(day, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                              Text(month, style: const TextStyle(fontSize: 12)),
+                              Text(ev.datetime.day.toString(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                              Text(DateFormat('MMM').format(ev.datetime), style: const TextStyle(fontSize: 12)),
                             ],
                           ),
                         ),
                       ),
-                      title: Text(record.projectName ?? record.userName ?? 'Attendance'),
-                      subtitle: Text('In: $punchIn\nOut: $punchOut'),
-                      isThreeLine: true,
+                      title: Text('${ev.label} • ${ev.projectName}'),
+                      subtitle: Text('$displayDate at $displayTime'),
                     );
                   },
-                );
+                ), // ListView.separated
+              ); // RefreshIndicator
               },
             ),
           ),
