@@ -70,19 +70,31 @@ class AttendanceNotifier extends StateNotifier<AttendanceState> {
   Future<void> punchIn({
     int? labourId,
     int? supervisorId,
+    String? supervisorLoginId,
     required int projectId,
     required bool isSupervisor,
   }) async {
     try {
       state = state.copyWith(isLoading: true);
       final now = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+      // Debug: log the local time we will send
+      print('====================================================');
+      print('▶️ AttendanceNotifier.punchIn called');
+      print('  labourId: ${labourId ?? 'null'}');
+      print('  supervisorId: ${supervisorId ?? 'null'}');
+      print('  projectId: $projectId');
+      print('  isSupervisor: $isSupervisor');
+      print('  local_punch_in_time: $now');
+
       final res = await AuthService.punchIn(
         labourId: labourId,
         supervisorId: supervisorId,
+        supervisorLoginId: supervisorLoginId,
         projectId: projectId,
         punchInTime: now,
         isSupervisor: isSupervisor,
       );
+      print('◀️ AttendanceNotifier.punchIn returned');
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('isPunchedIn', true);
@@ -117,6 +129,16 @@ class AttendanceNotifier extends StateNotifier<AttendanceState> {
       if (attendanceId == null) throw Exception("No active attendance ID");
 
       final now = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+      // Debug: log the local time and attendance id we'll send
+      print('====================================================');
+      print('▶️ AttendanceNotifier.punchOut called');
+      print('  attendanceId: $attendanceId');
+      print('  labourId: ${labourId ?? 'null'}');
+      print('  supervisorId: ${supervisorId ?? 'null'}');
+      print('  projectId: $projectId');
+      print('  isSupervisor: $isSupervisor');
+      print('  local_punch_out_time: $now');
+
       await AuthService.punchOut(
         attendanceId: attendanceId,
         punchOutTime: now,
@@ -125,6 +147,8 @@ class AttendanceNotifier extends StateNotifier<AttendanceState> {
         projectId: projectId,
         isSupervisor: isSupervisor,
       );
+
+      print('◀️ AttendanceNotifier.punchOut completed');
 
       // Remove only attendance-related keys to avoid clearing other stored data
       await prefs.remove('isPunchedIn');

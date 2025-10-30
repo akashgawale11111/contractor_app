@@ -555,13 +555,29 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
     final now = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
 
     try {
+      // Log punch attempt details so we can see punch times in console
+      print('====================================================');
+      print('🔹 [FaceCompareAWS] User match successful. Preparing to ${widget.action}');
+      print('  userId: $userId');
+      print('  isSupervisor: $isSupervisor');
+      print('  projectId: ${widget.projectId}');
+      print('  local_punch_time (now): $now');
+
       if (widget.action == 'punch_in') {
+        print('   -> Calling AttendanceNotifier.punchIn...');
+        // If supervisor, prefer to send loginId (string) which backend expects
+        final currentUser = ref.read(authProvider);
+        final supervisorLoginId = isSupervisor ? currentUser?.supervisor?.loginId : null;
+
         await notifier.punchIn(
           labourId: isSupervisor ? null : userId,
           supervisorId: isSupervisor ? userId : null,
+          supervisorLoginId: supervisorLoginId,
           projectId: int.parse(widget.projectId),
           isSupervisor: isSupervisor,
         );
+        print('   <- AttendanceNotifier.punchIn completed (request returned)');
+
         ref.read(punchStateProvider.notifier).punchIn(int.parse(widget.projectId));
         if (!mounted) return;
         await _showSuccessPopup(
@@ -571,12 +587,15 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
           punchTime: now,
         );
       } else {
+        print('   -> Calling AttendanceNotifier.punchOut...');
         await notifier.punchOut(
           labourId: isSupervisor ? null : userId,
           supervisorId: isSupervisor ? userId : null,
           projectId: int.parse(widget.projectId),
           isSupervisor: isSupervisor,
         );
+        print('   <- AttendanceNotifier.punchOut completed (request returned)');
+
         ref.read(punchStateProvider.notifier).punchOut();
         if (!mounted) return;
         await _showSuccessPopup(
@@ -586,6 +605,7 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
           punchTime: now,
         );
       }
+      print('🔹 [FaceCompareAWS] ${widget.action} flow finished (navigating back)');
 
       if (!mounted) return;
       Navigator.of(context).popUntil((route) => route.isFirst);

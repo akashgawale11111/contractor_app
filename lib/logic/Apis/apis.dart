@@ -3,12 +3,50 @@ import 'dart:convert';
 import 'package:contractor_app/logic/models/project_model.dart';
 import 'package:contractor_app/logic/models/punch_stat.dart';
 import 'package:contractor_app/logic/models/user_model.dart';
+import 'package:contractor_app/utils/shared_prefs.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
 class AuthService {
   static const String baseUrl = "http://admin.mmprecise.com/api";
   static const storage = FlutterSecureStorage();
+
+  /// Fetch attendance history
+  static Future<Map<String, dynamic>> getAttendanceHistory({
+    required String userType,
+    required String userId,
+  }) async {
+    print("====================================================");
+    print("🔹 Starting ATTENDANCE HISTORY request...");
+    print("🔹 Endpoint: $baseUrl/attendance-history");
+    print("🔹 User Type: $userType");
+    print("🔹 User ID: $userId");
+
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/attendance-history?user_type=$userType&user_id=$userId'),
+      );
+
+      print("✅ Response status: ${response.statusCode}");
+      print("📦 Raw response body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        print("✅ Successfully parsed response");
+        print("====================================================");
+        return data;
+      } else {
+        print("❌ Request failed with status: ${response.statusCode}");
+        print("❌ Error response: ${response.body}");
+        print("====================================================");
+        throw Exception('Failed to load attendance history: ${response.statusCode}');
+      }
+    } catch (e) {
+      print("❌ Exception occurred: $e");
+      print("====================================================");
+      throw Exception('Error fetching attendance history: $e');
+    }
+  }
 
   /// Handles login for both Labour & Supervisor
   static Future<UserData> login(String userId, String password) async {
@@ -48,9 +86,15 @@ class AuthService {
       }
 
       final user = UserData.fromJson(data);
+      
+      // Save user info to SharedPreferences
+      final userType = user.isLabour ? 'labour' : (user.isSupervisor ? 'supervisor' : '');
+      await SharedPrefs.saveUserInfo(userId, userType);
+      
       print("✅ Parsed UserData successfully");
       print("👷 Is Labour: ${user.isLabour}");
       print("🧑‍💼 Is Supervisor: ${user.isSupervisor}");
+      print("💾 Saved user info - Type: $userType, ID: $userId");
       print("====================================================");
 
       return user;
@@ -85,31 +129,59 @@ class AuthService {
   static Future<PunchModel> punchIn({
     int? labourId,
     int? supervisorId,
+    String? supervisorLoginId,
     required int projectId,
     required String punchInTime,
     required bool isSupervisor,
   }) async {
-    var request =
-        http.MultipartRequest('POST', Uri.parse('$baseUrl/attendance'));
-    
-    // Add appropriate ID based on user type
-    if (isSupervisor) {
-      request.fields['supervisor_id'] = supervisorId.toString();
-    } else {
-      request.fields['labour_id'] = labourId.toString();
-    }
-    
-    request.fields['project_id'] = projectId.toString();
-    request.fields['status'] = "punchin";
-    request.fields['punch_in_time'] = punchInTime; // 🔹 custom field (optional)
+    // Build JSON payload per backend examples (curl)
+    final payload = <String, dynamic>{
+      'status': 'punchin',
+      'project_id': projectId,
+      'punch_in_time': punchInTime,
+    };
 
-    var response = await request.send();
-    var body = await response.stream.bytesToString();
+    if (isSupervisor) {
+      payload['user_type'] = 'supervisor';
+      // prefer login id if available (backend example uses login_id for supervisor)
+      if (supervisorLoginId != null && supervisorLoginId.isNotEmpty) {
+        payload['login_id'] = supervisorLoginId;
+      } else if (supervisorId != null) {
+        // fallback: send numeric supervisor id with key supervisor_id (some endpoints accept either)
+        payload['supervisor_id'] = supervisorId;
+      }
+    } else {
+      payload['user_type'] = 'labour';
+      if (labourId != null) payload['labour_id'] = labourId;
+    }
+
+    // Use HTTPS (matching cURL examples)
+    final url = Uri.parse(baseUrl.replaceFirst('http://', 'https://') + '/attendance');
+
+    print('====================================================');
+    print('🔹 AuthService.punchIn sending JSON POST');
+    print('  URL: $url');
+    print('  Payload: $payload');
+    if ((payload['punch_in_time'] ?? '').toString().trim().isEmpty) {
+      print('⚠️ WARNING: punch_in_time is empty or missing in payload');
+    }
+
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(payload),
+    );
+
+    print('🔸 punchIn response status: ${response.statusCode}');
+    print('🔸 punchIn response body: ${response.body}');
+    print('====================================================');
 
     if (response.statusCode == 200) {
-      return PunchModel.fromJson(jsonDecode(body));
+      return PunchModel.fromJson(jsonDecode(response.body));
+    } else if (response.statusCode == 404) {
+      throw Exception('Punch In Failed: 404 Not Found. URL: $url - Response body: ${response.body}');
     } else {
-      throw Exception("Punch In Failed");
+      throw Exception('Punch In Failed: ${response.statusCode} - ${response.body}');
     }
   }
 
@@ -122,29 +194,34 @@ class AuthService {
     required int projectId,
     required bool isSupervisor,
   }) async {
-    var request =
-        http.MultipartRequest('POST', Uri.parse('$baseUrl/attendance'));
-    request.fields['status'] = "punchout";
-    request.fields['attendance_id'] = attendanceId.toString();
-    request.fields['punch_out_time'] =
-        punchOutTime; // 🔹 custom field (optional)
-    
-    // Add appropriate ID based on user type
-    if (isSupervisor) {
-      request.fields['supervisor_id'] = supervisorId.toString();
-    } else {
-      request.fields['labour_id'] = labourId.toString();
-    }
-    
-    request.fields['project_id'] = projectId.toString();
+    // Backend expects JSON body like: { "attendance_id": 50, "status": "punchout" }
+    final payload = <String, dynamic>{
+      'attendance_id': attendanceId,
+      'status': 'punchout',
+    };
 
-    var response = await request.send();
-    var body = await response.stream.bytesToString();
+    final url = Uri.parse(baseUrl.replaceFirst('http://', 'https://') + '/attendance');
+    print('====================================================');
+    print('🔹 AuthService.punchOut sending JSON POST');
+    print('  URL: $url');
+    print('  Payload: $payload');
+
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(payload),
+    );
+
+    print('🔸 punchOut response status: ${response.statusCode}');
+    print('🔸 punchOut response body: ${response.body}');
+    print('====================================================');
 
     if (response.statusCode == 200) {
-      return PunchModel.fromJson(jsonDecode(body));
+      return PunchModel.fromJson(jsonDecode(response.body));
+    } else if (response.statusCode == 404) {
+      throw Exception('Punch Out Failed: 404 Not Found. URL: $url - Response body: ${response.body}');
     } else {
-      throw Exception("Punch Out Failed");
+      throw Exception('Punch Out Failed: ${response.statusCode} - ${response.body}');
     }
   }
 }
