@@ -160,18 +160,18 @@ class UserProfileScreen extends ConsumerWidget {
                 children: [
                   ...infoRows,
                   const SizedBox(height: 24),
-                  ElevatedButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(Icons.edit),
-                    label: const Text("Edit Profile"),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 40, vertical: 14),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30)),
-                      backgroundColor: Colors.blueAccent,
-                    ),
-                  ),
+                  // ElevatedButton.icon(
+                  //   onPressed: () {},
+                  //   icon: const Icon(Icons.edit),
+                  //   label: const Text("Edit Profile"),
+                  //   style: ElevatedButton.styleFrom(
+                  //     padding: const EdgeInsets.symmetric(
+                  //         horizontal: 40, vertical: 14),
+                  //     shape: RoundedRectangleBorder(
+                  //         borderRadius: BorderRadius.circular(30)),
+                  //     backgroundColor: Colors.blueAccent,
+                  //   ),
+                  // ),
                   const SizedBox(height: 24),
                   Text(
                     "Role: ${user.userType ?? (isLabour ? 'Labour' : 'Supervisor')}",

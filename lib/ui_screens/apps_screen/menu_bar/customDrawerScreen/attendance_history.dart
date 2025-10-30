@@ -80,7 +80,7 @@ class AttendanceHistory extends ConsumerWidget {
           appBar: AppBar(
             title: const Text(
               'Attendance History',
-              style: TextStyle(fontFamily: 'Source Sans 3'),
+              style: TextStyle(fontFamily: 'Source Sans 3',color: Colors.black),
             ),
             centerTitle: true,
           ),
