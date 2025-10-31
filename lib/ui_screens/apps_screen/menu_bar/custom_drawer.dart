@@ -1,6 +1,5 @@
 import 'package:contractor_app/logic/Apis/provider.dart';
 import 'package:contractor_app/ui_screens/apps_screen/menu_bar/customDrawerScreen/attendance_history.dart';
-import 'package:contractor_app/ui_screens/apps_screen/menu_bar/customDrawerScreen/payment_history.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:contractor_app/language/lib/l10n/app_localizations.dart';
@@ -60,16 +59,7 @@ class CustomDrawer extends ConsumerWidget {
               );
             },
           ),
-          ListTile(
-            leading: const Icon(Icons.payment),
-            title: Text('${loc.paymentHistory} >'),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const PaymentHistory()),
-              );
-            },
-          ),
+      
           ListTile(
             leading: const Icon(Icons.edit_calendar),
             title: Text('${loc.attendanceHistory} >'),

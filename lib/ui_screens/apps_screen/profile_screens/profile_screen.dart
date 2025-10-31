@@ -140,26 +140,34 @@ class UserProfileScreen extends ConsumerWidget {
     if (isLabour && user.labour != null) {
       final labour = user.labour!;
       avatarUrl = labour.imageUrl;
-      if (avatarUrl != null && !avatarUrl.startsWith("http")) {
-        avatarUrl = baseImageUrl + avatarUrl;
-      }
-      displayName = "${labour.firstName ?? ''} ${labour.lastName ?? ''}";
+      displayName = labour.fullName ?? "${labour.firstName ?? ''} ${labour.lastName ?? ''}";
       infoRows = [
         infoRow(Icons.badge, "Labour ID", labour.labourId),
+        infoRow(Icons.person, "Full Name", labour.fullName),
         infoRow(Icons.email, "Email", labour.email),
+        infoRow(Icons.phone, "Phone Number", labour.phoneNumber),
+        infoRow(Icons.attach_money, "Daily Wage", labour.dailyWage),
+        infoRow(Icons.work, "Skill Level", labour.skillLevel),
+        infoRow(Icons.star, "Specialization", labour.specialization),
+        infoRow(Icons.business, "Project ID", labour.projectId?.toString()),
+        infoRow(Icons.supervisor_account, "Supervisor ID", labour.supervisorId?.toString()),
+        infoRow(Icons.info, "Status", labour.status),
       ];
     }
     // 🧩 Supervisor Section
     else if (isSupervisor && user.supervisor != null) {
       final supervisor = user.supervisor!;
-      avatarUrl = supervisor.imageUrl ?? supervisor.imageUrl;
-      if (avatarUrl != null && !avatarUrl.startsWith("http")) {
-        avatarUrl = baseImageUrl + avatarUrl;
-      }
-      displayName = supervisor.supervisorName ?? 'Supervisor';
+      avatarUrl = supervisor.imageUrl;
+      displayName = supervisor.supervisorName ?? supervisor.name ?? 'Supervisor';
       infoRows = [
         infoRow(Icons.badge, "Login ID", supervisor.loginId),
-        infoRow(Icons.email, "Email", null),
+        infoRow(Icons.person, "Name", supervisor.name),
+        infoRow(Icons.email, "Email", supervisor.email),
+        infoRow(Icons.phone, "Phone", supervisor.phone),
+        infoRow(Icons.location_on, "Address", supervisor.address),
+        infoRow(Icons.work, "Role", supervisor.role),
+        infoRow(Icons.category, "Supervisor Type", supervisor.supervisorType),
+        infoRow(Icons.info, "Status", supervisor.status),
       ];
     }
 
@@ -238,18 +246,7 @@ class UserProfileScreen extends ConsumerWidget {
                 children: [
                   ...infoRows,
                   const SizedBox(height: 24),
-                  // ElevatedButton.icon(
-                  //   onPressed: () {},
-                  //   icon: const Icon(Icons.edit),
-                  //   label: const Text("Edit Profile"),
-                  //   style: ElevatedButton.styleFrom(
-                  //     padding: const EdgeInsets.symmetric(
-                  //         horizontal: 40, vertical: 14),
-                  //     shape: RoundedRectangleBorder(
-                  //         borderRadius: BorderRadius.circular(30)),
-                  //     backgroundColor: Colors.blueAccent,
-                  //   ),
-                  // ),
+                
                   const SizedBox(height: 24),
                   Text(
                     "Role: ${user.userType ?? (isLabour ? 'Labour' : 'Supervisor')}",

@@ -70,22 +70,32 @@ class AuthService {
       print("✅ Response status: ${response.statusCode}");
       print("📦 Raw response body: $responseBody");
 
+      print("Decoding JSON response...");
       final data = json.decode(responseBody);
+      print("JSON decoded successfully.");
+
+      // 🐞 DEBUG: Print the raw JSON data from the login response
+      print('📦 [AuthService.login] Raw response JSON: ${JsonEncoder.withIndent('  ').convert(data)}');
 
       if (response.statusCode != 200) {
+        print("❌ Login failed with status code ${response.statusCode}");
         throw Exception("Failed to login (${response.statusCode})");
       }
 
       if (data['status'] == false) {
+        print("❌ Login failed with status false. Message: ${data['message']}");
         throw Exception(data['message'] ?? "Invalid credentials");
       }
 
       // ✅ Store token securely
       if (data['token'] != null) {
         await storage.write(key: 'authToken', value: data['token']);
+        print("🔑 Token stored securely.");
       }
 
+      print("Parsing user data from JSON...");
       final user = UserData.fromJson(data);
+      print("User data parsed successfully.");
       
       // Save user info to SharedPreferences
       final userType = user.isLabour ? 'labour' : (user.isSupervisor ? 'supervisor' : '');
@@ -99,8 +109,9 @@ class AuthService {
 
       return user;
     } catch (e, stack) {
-      print("❌ Login failed: $e");
-      print(stack);
+      print("❌❌❌ An error occurred during login ❌❌❌");
+      print("Error: $e");
+      print("Stack trace:$stack");
       print("====================================================");
       throw Exception("Login failed: $e");
     }

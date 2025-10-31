@@ -27,15 +27,15 @@ class _BottomNavExampleState extends ConsumerState<BottomNavExample> {
       appBar: AppBar(
         elevation: 4,
         backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-        actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.search,
-              color: Colors.black,
-            ),
-            onPressed: () {},
-          ),
-        ],
+        // actions: [
+        //   IconButton(
+        //     icon: const Icon(
+        //       Icons.search,
+        //       color: Colors.black,
+        //     ),
+        //     onPressed: () {},
+        //   ),
+        // ],
         automaticallyImplyLeading: false,
         centerTitle: true, // ✅ Center the title
         leading: Builder(

@@ -514,6 +514,9 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
   Future<void> _takeSelfieAndCompare(
     String userImageUrl, String name, int userId,
     {required bool isSupervisor}) async {
+
+    print('📸 _takeSelfieAndCompare called with userImageUrl: $userImageUrl');
+
     final picked = await ImagePicker().pickImage(source: ImageSource.camera);
     if (picked == null) return;
 
@@ -522,10 +525,13 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
 
     try {
       final selfieBytes = await _selfieImage!.readAsBytes();
-  final networkImage = await http.get(Uri.parse(userImageUrl));
+
+      // Ensure the user image URL is properly encoded when it's a full URL
+      final targetUrl = (userImageUrl.startsWith('http')) ? Uri.encodeFull(userImageUrl) : userImageUrl;
+      final networkImage = await http.get(Uri.parse(targetUrl));
 
       if (networkImage.statusCode != 200) {
-        _showErrorDialog("Failed to load labour image.");
+        _showErrorDialog("Failed to load user image.");
         return;
       }
 
@@ -701,6 +707,13 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(authProvider);
+
+    // 🐞 DEBUG: Print the full user object from authProvider
+    if (user != null) {
+      final userJson = jsonEncode(user.toJson());
+      print('👨‍💻 [FaceCompareAWS] User object: ${JsonEncoder.withIndent('  ').convert(jsonDecode(userJson))}');
+    }
+
     if (user == null) {
       return const Scaffold(body: Center(child: Text("No user data")));
     }
@@ -800,6 +813,10 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
                     final imageUrl = labourId != null
                         ? (user.labour?.imageUrl ?? '')
                         : (user.supervisor?.imageUrl ?? '');
+
+                    // 🐞 DEBUG: Print the selected image URL
+                    print('🖼️ [FaceCompareAWS] Selected image URL: $imageUrl');
+
                     final displayName = labourId != null
                         ? "${user.labour?.firstName ?? ''} ${user.labour?.lastName ?? ''}"
                         : (user.supervisor?.supervisorName ?? 'Supervisor');
