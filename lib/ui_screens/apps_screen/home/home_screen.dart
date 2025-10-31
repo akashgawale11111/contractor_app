@@ -167,6 +167,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Container(
       margin: EdgeInsets.only(bottom: height * 0.02),
       child: Card(
+        color: Color(0xfffff7f4),
         elevation: 4,
         child: Padding(
           padding: EdgeInsets.all(width * 0.028),
@@ -193,15 +194,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(project.name ?? "Untitled Project",
-                        style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.orange)),
+                    Text(
+                      project.name ?? "Untitled Project",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFFE85426),
+                        fontFamily: 'Source Sans 3',
+                      ),
+                    ),
                     const SizedBox(height: 8),
-                    Text(project.address ?? "No Address"),
+                    Row(children: [
+                      Icon(Icons.location_on,
+                          size: 16, color: Colors.grey.shade600),
+                      Text(project.address ?? "No Address"),
+                    ]),
                     Text(project.city ?? "No City"),
-                    Text(project.state ?? "No State"),
+                    Text(project.state ?? "No State",maxLines: 2,),
                     const SizedBox(height: 10),
                     Row(
                       children: [
@@ -512,9 +521,8 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
 
   // -------------------- Face Compare + Punch --------------------
   Future<void> _takeSelfieAndCompare(
-    String userImageUrl, String name, int userId,
-    {required bool isSupervisor}) async {
-
+      String userImageUrl, String name, int userId,
+      {required bool isSupervisor}) async {
     print('📸 _takeSelfieAndCompare called with userImageUrl: $userImageUrl');
 
     final picked = await ImagePicker().pickImage(source: ImageSource.camera);
@@ -527,7 +535,9 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
       final selfieBytes = await _selfieImage!.readAsBytes();
 
       // Ensure the user image URL is properly encoded when it's a full URL
-      final targetUrl = (userImageUrl.startsWith('http')) ? Uri.encodeFull(userImageUrl) : userImageUrl;
+      final targetUrl = (userImageUrl.startsWith('http'))
+          ? Uri.encodeFull(userImageUrl)
+          : userImageUrl;
       final networkImage = await http.get(Uri.parse(targetUrl));
 
       if (networkImage.statusCode != 200) {
@@ -563,7 +573,8 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
     try {
       // Log punch attempt details so we can see punch times in console
       print('====================================================');
-      print('🔹 [FaceCompareAWS] User match successful. Preparing to ${widget.action}');
+      print(
+          '🔹 [FaceCompareAWS] User match successful. Preparing to ${widget.action}');
       print('  userId: $userId');
       print('  isSupervisor: $isSupervisor');
       print('  projectId: ${widget.projectId}');
@@ -573,7 +584,8 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
         print('   -> Calling AttendanceNotifier.punchIn...');
         // If supervisor, prefer to send loginId (string) which backend expects
         final currentUser = ref.read(authProvider);
-        final supervisorLoginId = isSupervisor ? currentUser?.supervisor?.loginId : null;
+        final supervisorLoginId =
+            isSupervisor ? currentUser?.supervisor?.loginId : null;
 
         await notifier.punchIn(
           labourId: isSupervisor ? null : userId,
@@ -584,7 +596,9 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
         );
         print('   <- AttendanceNotifier.punchIn completed (request returned)');
 
-        ref.read(punchStateProvider.notifier).punchIn(int.parse(widget.projectId));
+        ref
+            .read(punchStateProvider.notifier)
+            .punchIn(int.parse(widget.projectId));
         if (!mounted) return;
         await _showSuccessPopup(
           "Punched In Successfully!",
@@ -611,7 +625,8 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
           punchTime: now,
         );
       }
-      print('🔹 [FaceCompareAWS] ${widget.action} flow finished (navigating back)');
+      print(
+          '🔹 [FaceCompareAWS] ${widget.action} flow finished (navigating back)');
 
       if (!mounted) return;
       Navigator.of(context).popUntil((route) => route.isFirst);
@@ -711,7 +726,8 @@ class _FaceCompareAWSState extends ConsumerState<FaceCompareAWS> {
     // 🐞 DEBUG: Print the full user object from authProvider
     if (user != null) {
       final userJson = jsonEncode(user.toJson());
-      print('👨‍💻 [FaceCompareAWS] User object: ${JsonEncoder.withIndent('  ').convert(jsonDecode(userJson))}');
+      print(
+          '👨‍💻 [FaceCompareAWS] User object: ${JsonEncoder.withIndent('  ').convert(jsonDecode(userJson))}');
     }
 
     if (user == null) {

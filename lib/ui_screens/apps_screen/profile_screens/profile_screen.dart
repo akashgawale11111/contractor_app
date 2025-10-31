@@ -37,9 +37,7 @@ class UserProfileScreen extends ConsumerWidget {
                             height: 120,
                             width: 120,
                             child: Center(
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                              ),
+                              child: CircularProgressIndicator(color: Colors.white),
                             ),
                           );
                         },
@@ -47,11 +45,7 @@ class UserProfileScreen extends ConsumerWidget {
                           return const SizedBox(
                             height: 180,
                             child: Center(
-                              child: Icon(
-                                Icons.broken_image,
-                                color: Colors.white,
-                                size: 56,
-                              ),
+                              child: Icon(Icons.broken_image, color: Colors.white, size: 56),
                             ),
                           );
                         },
@@ -80,42 +74,6 @@ class UserProfileScreen extends ConsumerWidget {
     );
   }
 
-  // 🟢 Change this to your correct image folder on the server.
-  static const String baseImageUrl = "http://admin.mmprecise.com/uploads/";
-
-  Widget infoRow(IconData icon, String title, String? value) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        child: Row(
-          children: [
-            Icon(icon, color: const Color.fromARGB(255, 144, 221, 106)),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title,
-                      style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.grey)),
-                  const SizedBox(height: 2),
-                  Text(value ?? "N/A",
-                      style: const TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.w500)),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authProvider);
@@ -134,130 +92,199 @@ class UserProfileScreen extends ConsumerWidget {
 
     String? avatarUrl;
     String displayName = 'User';
-    List<Widget> infoRows = [];
+    Map<String, String?> personalDetails = {};
+    Map<String, String?> workDetails = {};
 
     // 🧩 Labour Section
     if (isLabour && user.labour != null) {
       final labour = user.labour!;
       avatarUrl = labour.imageUrl;
       displayName = labour.fullName ?? "${labour.firstName ?? ''} ${labour.lastName ?? ''}";
-      infoRows = [
-        infoRow(Icons.badge, "Labour ID", labour.labourId),
-        infoRow(Icons.person, "Full Name", labour.fullName),
-        infoRow(Icons.email, "Email", labour.email),
-        infoRow(Icons.phone, "Phone Number", labour.phoneNumber),
-        infoRow(Icons.attach_money, "Daily Wage", labour.dailyWage),
-        infoRow(Icons.work, "Skill Level", labour.skillLevel),
-        infoRow(Icons.star, "Specialization", labour.specialization),
-        infoRow(Icons.business, "Project ID", labour.projectId?.toString()),
-        infoRow(Icons.supervisor_account, "Supervisor ID", labour.supervisorId?.toString()),
-        infoRow(Icons.info, "Status", labour.status),
-      ];
+
+      personalDetails = {
+        "Name": labour.fullName,
+        "Labour ID": labour.labourId,
+        "Contact": labour.phoneNumber,
+        "Email": labour.email,
+      };
+
+      workDetails = {
+        "Daily Wage": labour.dailyWage,
+        "Skill Level": labour.skillLevel,
+        "Specialization": labour.specialization,
+        "Project ID": labour.projectId?.toString(),
+        "Supervisor ID": labour.supervisorId?.toString(),
+        "Status": labour.status,
+      };
     }
     // 🧩 Supervisor Section
     else if (isSupervisor && user.supervisor != null) {
       final supervisor = user.supervisor!;
       avatarUrl = supervisor.imageUrl;
       displayName = supervisor.supervisorName ?? supervisor.name ?? 'Supervisor';
-      infoRows = [
-        infoRow(Icons.badge, "Login ID", supervisor.loginId),
-        infoRow(Icons.person, "Name", supervisor.name),
-        infoRow(Icons.email, "Email", supervisor.email),
-        infoRow(Icons.phone, "Phone", supervisor.phone),
-        infoRow(Icons.location_on, "Address", supervisor.address),
-        infoRow(Icons.work, "Role", supervisor.role),
-        infoRow(Icons.category, "Supervisor Type", supervisor.supervisorType),
-        infoRow(Icons.info, "Status", supervisor.status),
-      ];
+
+      personalDetails = {
+        "Name": supervisor.name,
+        "Login ID": supervisor.loginId,
+        "Contact": supervisor.phone,
+        "Email": supervisor.email,
+        "Address": supervisor.address,
+      };
+
+      workDetails = {
+        "Role": supervisor.role,
+        "Supervisor Type": supervisor.supervisorType,
+        "Status": supervisor.status,
+      };
     }
 
+    final width = MediaQuery.of(context).size.width;
+    final height = MediaQuery.of(context).size.height;
+
+    TextStyle labelStyle = const TextStyle(fontFamily: 'Roboto', fontSize: 18);
+    TextStyle valueStyle = const TextStyle(
+      fontFamily: 'Roboto',
+      fontSize: 18,
+      fontWeight: FontWeight.bold,
+    );
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 220,
-            pinned: true,
-            flexibleSpace: FlexibleSpaceBar(
-              title: Text(
-                displayName,
-                style: const TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.w500,fontSize: 16),
-              ),
-              background: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color.fromARGB(255, 221, 56, 233), Color.fromARGB(255, 156, 113, 255)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-                child: Center(
-                  child: CircleAvatar(
-                    radius: 55,
-                    backgroundColor: Colors.white,
-                    child: avatarUrl != null
-                        ? GestureDetector(
-                            onTap: () => _showImageDialog(context, avatarUrl!),
-                            child: ClipOval(
-                              child: Image.network(
-                                avatarUrl,
-                                width: 110,
-                                height: 110,
-                                fit: BoxFit.cover,
-                                loadingBuilder:
-                                    (context, child, loadingProgress) {
-                                  if (loadingProgress == null) {
-                                    debugPrint(
-                                        "✅ Image loaded successfully: $avatarUrl");
-                                    return child;
-                                  }
-                                  return const CircularProgressIndicator(
-                                    color: Colors.blueAccent,
-                                  );
-                                },
-                                errorBuilder:
-                                    (context, error, stackTrace) {
-                                  debugPrint("❌ Image load failed: $error");
-                                  debugPrint("📂 Image URL: $avatarUrl");
-                                  return const Icon(
-                                    Icons.person,
-                                    size: 60,
-                                    color: Colors.blueAccent,
-                                  );
-                                },
+      body: SingleChildScrollView(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              children: [
+                // Edit Button
+                // Row(
+                //   mainAxisAlignment: MainAxisAlignment.end,
+                //   children: [
+                //     Padding(
+                //       padding: EdgeInsets.all(width * 0.02),
+                //       child: GestureDetector(
+                //         onTap: () {
+                //           ScaffoldMessenger.of(context).showSnackBar(
+                //             const SnackBar(content: Text("Edit Profile Coming Soon")),
+                //           );
+                //         },
+                //         child: const Text(
+                //           "Edit Profile",
+                //           style: TextStyle(
+                //             fontFamily: 'Roboto',
+                //             color: Colors.blue,
+                //             fontWeight: FontWeight.bold,
+                //             fontSize: 15,
+                //           ),
+                //         ),
+                //       ),
+                //     ),
+                //   ],
+                // ),
+
+                // Profile Image
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Container(
+                      width: width * 0.35,
+                      height: width * 0.35,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.yellow.shade200,
+                          width: 6,
+                        ),
+                      ),
+                      child: avatarUrl != null
+                          ? GestureDetector(
+                              onTap: () => _showImageDialog(context, avatarUrl!),
+                              child: ClipOval(
+                                child: Image.network(
+                                  avatarUrl!,
+                                  fit: BoxFit.cover,
+                                  loadingBuilder: (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return const Center(
+                                      child: CircularProgressIndicator(color: Colors.blueAccent),
+                                    );
+                                  },
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const Icon(Icons.person, size: 60, color: Colors.blueAccent),
+                                ),
                               ),
-                            ),
-                          )
-                        : const Icon(
-                            Icons.person,
-                            size: 60,
-                            color: Colors.blueAccent,
-                          ),
+                            )
+                          : const Icon(Icons.person, size: 80, color: Colors.blueAccent),
+                    ),
+                  ],
+                ),
+
+                SizedBox(height: height * 0.04),
+
+                // Personal Details
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Personal Details",
+                    style: const TextStyle(
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.bold,
+                      fontSize: 22,
+                    ),
                   ),
                 ),
-              ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  ...infoRows,
-                  const SizedBox(height: 24),
-                
-                  const SizedBox(height: 24),
-                  Text(
-                    "Role: ${user.userType ?? (isLabour ? 'Labour' : 'Supervisor')}",
+                SizedBox(height: height * 0.01),
+                ...personalDetails.entries.map((e) => Padding(
+                      padding: EdgeInsets.symmetric(vertical: height * 0.005),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text("${e.key} :", style: labelStyle),
+                          Flexible(child: Text(e.value ?? "N/A", style: valueStyle, textAlign: TextAlign.right)),
+                        ],
+                      ),
+                    )),
+
+                SizedBox(height: height * 0.04),
+
+                // Work Details
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Work Details",
                     style: const TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.bold),
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.bold,
+                      fontSize: 22,
+                    ),
                   ),
-                ],
-              ),
+                ),
+                SizedBox(height: height * 0.01),
+                ...workDetails.entries.map((e) => Padding(
+                      padding: EdgeInsets.symmetric(vertical: height * 0.005),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text("${e.key} :", style: labelStyle),
+                          Flexible(child: Text(e.value ?? "N/A", style: valueStyle, textAlign: TextAlign.right)),
+                        ],
+                      ),
+                    )),
+
+                SizedBox(height: height * 0.05),
+
+                // Role Info
+                Text(
+                  "Role: ${user.userType ?? (isLabour ? 'Labour' : 'Supervisor')}",
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Roboto',
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }

@@ -94,21 +94,10 @@ class CustomDrawer extends ConsumerWidget {
           ),
           SizedBox(height: height * 0.4),
           ListTile(
-            leading: const Icon(Icons.settings),
-            title: Text('${loc.settings} >'),
-            onTap: () {
-              showLogoutPopup(context);
-            },
-          ),
-          ListTile(
             leading: const Icon(Icons.logout),
             title: Text('${loc.logout} >'),
             onTap: () {
-              ref.read(authProvider.notifier).logout();
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
-              );
+              showLogoutPopup(context, ref);
             },
           ),
         ],
@@ -117,28 +106,32 @@ class CustomDrawer extends ConsumerWidget {
   }
 }
 
-void showLogoutPopup(BuildContext context) {
+void showLogoutPopup(BuildContext context, WidgetRef ref) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
-        title: const Text("Logout"),
-        content: const Text("Are you sure you want to logout?"),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        title: const Text('Logout', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: const Text('Are you sure you want to logout?'),
         actions: [
           TextButton(
-            child: const Text("Cancel"),
             onPressed: () {
               Navigator.of(context).pop();
             },
+            child: const Text('Cancel'),
           ),
-          TextButton(
-            child: const Text("Logout"),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (context) => const LoginScreen()),
-                (Route<dynamic> route) => false,
+              ref.read(authProvider.notifier).logout();
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+                (route) => false,
               );
             },
+            child: const Text('Logout'),
           ),
         ],
       );
